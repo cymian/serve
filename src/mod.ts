@@ -110,9 +110,6 @@ const _NO_CACHE_HEADERS = [
 // - without it browsers heuristically cache off Last-Modified and serve
 //   stale files after a rebuild
 
-const _ALLOWED_FETCH_SITES = ["same-origin", "same-site", "none"];
-// - "none" is a user-initiated load: a typed URL, a bookmark
-
 //
 //@namespace
 
@@ -170,11 +167,19 @@ const Serve: ServeApi = {
   },
 
   isRequestAllowed(request: Request): boolean {
-    const site = request.headers.get("sec-fetch-site");
+    // Check Sec-Fetch-Site header (set by browsers only)
 
-    // If the header is absent or names a trusted relationship, allow
+    const siteType = request.headers.get("sec-fetch-site");
 
-    if (site === null || _ALLOWED_FETCH_SITES.includes(site)) return true;
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site
+    if ([
+      "same-origin", // same domain, workspace scheme and port
+      "same-site", // same domain and scheme
+      "none", // a user-initiated load: a typed URL, a bookmark
+      null, // not set (not a browser-initiated request)
+    ].includes(siteType)) {
+      return true;
+    }
 
     // Allow a cross-site load into its own tab, but not into an embed
 
