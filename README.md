@@ -3,11 +3,11 @@
 A static dev server with secure and convenient defaults:
 
 - listens on `127.0.0.1` (connections from this machine only) instead of `0.0.0.0` (connections from any machine on the local network)
-- does not serve directory listings when index.html not present
+- does not serve directory listings when there's no `index.html`
 - does not serve dotfiles (e.g. `.env`, `.git/`)
-- does not send a `Access-Control-Allow-Origin: *` header, so that non-local websites in your browser can't read responses to any requests they send to your server
-  - note they still can send requests -- that is not preventable (@check: except with Local Network Access?)
-- sends a 'no-cache' header, to prevent stale page loads
+- does not send an `Access-Control-Allow-Origin: *` header, so other sites open in your browser can't read what it serves
+  - they can still send the requests -- blocking those is up to the browser (Chrome's Local Network Access; Firefox and Safari have no equivalent)
+- sends `cache-control: no-cache`, so the browser revalidates every request and a rebuild always shows up
 
 It uses `@std/http`'s `serveDir` to serve files. Normally the above behavior takes five flags:
 
@@ -39,13 +39,11 @@ await server.shutdown();
 
 Run with `-R` to read what it serves, `-N` to bind. Scope both: `-R=. -N=127.0.0.1:3080` grants exactly the project directory and the one port.
 
+`--lan` also prints the machine's LAN URL, which reads `Deno.networkInterfaces()` — gated behind `-S` (`--allow-sys`) and best scoped to `-S=networkInterfaces`. Without it the server still binds and serves, you just lose the `Network:` line; in a terminal Deno prompts for the permission first.
+
 ## Flags
 
 - `-p`, `--port` — default 8000
 - `-r`, `--root` — the directory served, default `.`
 - `--lan` — bind to 0.0.0.0, and print the LAN URL
 - `--dir-listing` — serve listings for directories that have no `index.html`
-
-Printing the LAN URL under `--lan` reads `Deno.networkInterfaces()`, which
-needs `-S=networkInterfaces`. Without it the server still binds — Deno just
-prompts for the sys permission before the second URL prints.
