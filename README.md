@@ -2,20 +2,26 @@
 
 A static dev server with secure and convenient defaults:
 
-- listens on `127.0.0.1` (connections from this machine only) instead of `0.0.0.0` (connections from any machine on the local network)
+- listens on `127.0.0.1` (connections from this machine only) instead of
+  `0.0.0.0` (connections from any machine on the local network)
 - does not serve directory listings when there's no `index.html`
 - does not serve dotfiles (e.g. `.env`, `.git/`)
-- does not send an `Access-Control-Allow-Origin: *` header, so other sites open in your browser can't read what it serves
-  - they can still send the requests -- blocking those is up to the browser (Chrome's Local Network Access; Firefox and Safari have no equivalent)
-- sends `cache-control: no-cache`, so the browser revalidates every request and a rebuild always shows up
+- does not send an `Access-Control-Allow-Origin: *` header, so other sites open
+  in your browser can't read what it serves
+  - they can still send the requests -- blocking those is up to the browser
+    (Chrome's Local Network Access; Firefox and Safari have no equivalent)
+- sends `cache-control: no-cache`, so the browser revalidates every request and
+  a rebuild always shows up
 
-It uses `@std/http`'s `serveDir` to serve files. Normally the above behavior takes five flags:
+It uses `@std/http`'s `serveDir` to serve files. Normally the above behavior
+takes five flags:
 
 ```sh
 --host 127.0.0.1 --no-dir-listing --no-dotfiles --no-cors -H 'cache-control: no-cache'
 ```
 
-You can use flags like `--lan` and `--dir-listing` to opt back in to certain behaviors.
+You can use flags like `--lan` and `--dir-listing` to opt back in to certain
+behaviors.
 
 ## Use
 
@@ -37,9 +43,14 @@ await server.shutdown();
 
 ### Permissions
 
-Run with `-R` to read what it serves, `-N` to bind. Scope both: `-R=. -N=127.0.0.1:3080` grants exactly the project directory and the one port.
+Run with `-R` to read what it serves, `-N` to bind. Scope both:
+`-R=. -N=127.0.0.1:3080` grants exactly the project directory and the one port.
 
-`--lan` also prints the machine's LAN URL, which reads `Deno.networkInterfaces()` — gated behind `-S` (`--allow-sys`) and best scoped to `-S=networkInterfaces`. Without it the server still binds and serves, you just lose the `Network:` line; in a terminal Deno prompts for the permission first.
+`--lan` also prints the machine's LAN URL, which reads
+`Deno.networkInterfaces()` — gated behind `-S` (`--allow-sys`) and best scoped
+to `-S=networkInterfaces`. Without it the server still binds and serves, you
+just lose the `Network:` line; in a terminal Deno prompts for the permission
+first.
 
 ## Flags
 
