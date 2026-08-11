@@ -29,6 +29,10 @@ import { serveDir } from "@std/http/file-server";
      same-origin -- isRequestAllowed cannot see it
    - os_boss/src/server/serveOsBoss.ts already does this; check Host against
      loopback, never against the request's own Host
+ - allow a cross-site top-level navigation again if something needs one, e.g.
+   an OAuth callback redirected back to localhost
+   - require Sec-Fetch-Dest: document, which is the tab itself; an iframe,
+     frame, object, or embed each name themselves instead
  - publish to jsr, then point the consumers at jsr:@cymian/serve
    - create-deno's addWebTasks, todo_app, mouse-training, and audio all reach
      it by the sibling path ../serve/src/mod.ts
@@ -81,11 +85,9 @@ export interface ServeApi {
 
   /**
    Returns true if the request is one a browser page is allowed to make.
-   - a cross-site subresource request is refused, which covers <script src>
-      and <img> embeds; those send no Origin, so the absent CORS header does
-      not stop a page reading what they load
-   - a cross-site top-level GET navigation is still allowed, e.g. an OAuth
-      redirect back to localhost
+   - every cross-site request is refused, whatever it asked for; a <script src>
+      or <img> embed sends no Origin, so the absent CORS header does not stop
+      the page reading what it loaded
    - true when no Sec-Fetch-Site arrives, since there is nothing to check --
       a non-browser client, or an origin browsers don't set it for
   */
@@ -177,22 +179,9 @@ const Serve: ServeApi = {
   },
 
   isRequestAllowed(request: Request): boolean {
-    const siteType = request.headers.get("sec-fetch-site");
-
-    // If the site relationship is one we serve, allow
-
-    if (_ALLOWED_FETCH_SITES.includes(siteType)) return true;
-
-    // Allow a cross-site load into its own tab, but not into an embed
-
-    const destination = request.headers.get("sec-fetch-dest");
-    // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest
-    const mode = request.headers.get("sec-fetch-mode");
-    // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Mode
-
-    return mode === "navigate" &&
-      request.method === "GET" &&
-      destination !== "object" && destination !== "embed";
+    return _ALLOWED_FETCH_SITES.includes(
+      request.headers.get("sec-fetch-site"),
+    );
   },
 
   parseArgs(args: string[]): ServeOptions {

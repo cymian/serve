@@ -91,12 +91,8 @@ Deno.test("start: an unchanged file revalidates to 304, so no-cache costs no tra
 //## isRequestAllowed
 
 /** A request as a page on another site would have the browser send it. */
-const crossSiteRequest = (
-  headers: Record<string, string>,
-  method = "GET",
-) =>
+const crossSiteRequest = (headers: Record<string, string>) =>
   new Request("http://127.0.0.1/index.html", {
-    method,
     headers: { "sec-fetch-site": "cross-site", ...headers },
   });
 
@@ -138,34 +134,19 @@ Deno.test("isRequestAllowed: a cross-site <script src> embed is refused, though 
   );
 });
 
-Deno.test("isRequestAllowed: a cross-site load into its own tab is allowed, e.g. an OAuth redirect", () => {
-  assertEquals(
-    Serve.isRequestAllowed(crossSiteRequest({
-      "sec-fetch-mode": "navigate",
-      "sec-fetch-dest": "document",
-    })),
-    true,
-  );
-});
-
-Deno.test("isRequestAllowed: a cross-site navigation into an embed is refused", () => {
-  assertEquals(
-    Serve.isRequestAllowed(crossSiteRequest({
-      "sec-fetch-mode": "navigate",
-      "sec-fetch-dest": "embed",
-    })),
-    false,
-  );
-});
-
-Deno.test("isRequestAllowed: a cross-site navigation that isn't a GET is refused", () => {
-  assertEquals(
-    Serve.isRequestAllowed(crossSiteRequest({
-      "sec-fetch-mode": "navigate",
-      "sec-fetch-dest": "document",
-    }, "POST")),
-    false,
-  );
+Deno.test("isRequestAllowed: a cross-site navigation is refused wherever it lands", () => {
+  for (
+    const destination of ["document", "iframe", "frame", "object", "embed"]
+  ) {
+    assertEquals(
+      Serve.isRequestAllowed(crossSiteRequest({
+        "sec-fetch-mode": "navigate",
+        "sec-fetch-dest": destination,
+      })),
+      false,
+      destination,
+    );
+  }
 });
 
 Deno.test("start: a cross-site request gets a 403 instead of the file", async () => {
