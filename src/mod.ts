@@ -1,6 +1,6 @@
 /**
  @fileoverview
- A static dev server with the defaults a dev server should have: loopback,
+ A static dev server with the defaults a dev server should have: loopback-only,
  no-cache, no dir listing, no dotfiles, no CORS. @std/http's serveDir does
  the serving; this module pins how it's configured.
 
