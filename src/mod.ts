@@ -86,8 +86,8 @@ export interface ServeApi {
       not stop a page reading what they load
    - a cross-site top-level GET navigation is still allowed, e.g. an OAuth
       redirect back to localhost
-   - true when the browser sends no Sec-Fetch-Site at all, since only a
-      browser can be held to this and only a browser sets the header
+   - true when no Sec-Fetch-Site arrives, since there is nothing to check --
+      a non-browser client, or an origin browsers don't set it for
   */
   isRequestAllowed(request: Request): boolean;
 
@@ -109,6 +109,16 @@ const _NO_CACHE_HEADERS = [
 ];
 // - without it browsers heuristically cache off Last-Modified and serve
 //   stale files after a rebuild
+
+const _ALLOWED_FETCH_SITES = [
+  "same-origin", // same scheme, host and port
+  "same-site", // same scheme and registrable domain, e.g. a sibling subdomain
+  "none", // a user-initiated load: a typed URL, a bookmark
+  null, // header absent: not a browser, or not an origin it's sent to
+];
+// - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site
+// - browsers set Sec-Fetch-* only for a potentially trustworthy URL, so a LAN
+//   address over plain http arrives with none of them
 
 //
 //@namespace
@@ -167,19 +177,11 @@ const Serve: ServeApi = {
   },
 
   isRequestAllowed(request: Request): boolean {
-    // Check Sec-Fetch-Site header (set by browsers only)
-
     const siteType = request.headers.get("sec-fetch-site");
 
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site
-    if ([
-      "same-origin", // same domain, workspace scheme and port
-      "same-site", // same domain and scheme
-      "none", // a user-initiated load: a typed URL, a bookmark
-      null, // not set (not a browser-initiated request)
-    ].includes(siteType)) {
-      return true;
-    }
+    // If the site relationship is one we serve, allow
+
+    if (_ALLOWED_FETCH_SITES.includes(siteType)) return true;
 
     // Allow a cross-site load into its own tab, but not into an embed
 
