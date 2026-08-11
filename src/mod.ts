@@ -112,7 +112,7 @@ const _NO_CACHE_HEADERS = [
 
 const _ALLOWED_FETCH_SITES = [
   "same-origin", // same scheme, host and port
-  "same-site", // same scheme and registrable domain, e.g. a sibling subdomain
+  "same-site", // same scheme and domain, i.e. subdomain and port can differ
   "none", // a user-initiated load: a typed URL, a bookmark
   null, // header absent: not a browser, or not an origin it's sent to
 ];
@@ -186,8 +186,11 @@ const Serve: ServeApi = {
     // Allow a cross-site load into its own tab, but not into an embed
 
     const destination = request.headers.get("sec-fetch-dest");
+    // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest
+    const mode = request.headers.get("sec-fetch-mode");
+    // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Mode
 
-    return request.headers.get("sec-fetch-mode") === "navigate" &&
+    return mode === "navigate" &&
       request.method === "GET" &&
       destination !== "object" && destination !== "embed";
   },
