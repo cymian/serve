@@ -37,9 +37,9 @@ As a task:
 From code:
 
 ```ts
-import Serve from "jsr:@cymian/serve";
+import { serve } from "jsr:@cymian/serve";
 
-const server = Serve.start({ port: 3000, root: "src/" });
+const server = serve({ port: 3000, root: "src/" });
 await server.shutdown();
 ```
 

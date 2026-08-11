@@ -13,7 +13,7 @@ import { isRequestAllowed, parseArgs } from "./helpers.ts";
 
 //## parseArgs
 
-Deno.test("parseArgs: nothing named leaves every option unset, so start() picks the defaults", () => {
+Deno.test("parseArgs: nothing named leaves every option unset, so serve() picks the defaults", () => {
   assertEquals(parseArgs([]), {});
 });
 
