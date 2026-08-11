@@ -2,15 +2,17 @@
 
 A static dev server with secure and convenient defaults:
 
-- listens on `127.0.0.1` (connections from this machine only) instead of
-  `0.0.0.0` (connections from any machine on the local network)
-- does not serve directory listings when there's no `index.html`
-- does not serve dotfiles (e.g. `.env`, `.git/`)
-- does not send an `Access-Control-Allow-Origin: *` header, so other sites open
-  in your browser can't read what it serves
+- **loopback-only**: listens on `127.0.0.1` (connections from this machine only)
+  instead of `0.0.0.0` (connections from any machine on the local network)
+- **no dir listings**: does not serve directory listings when there's no
+  `index.html`
+- **no dotfiles**: does not serve dotfiles (e.g. `.env`, `.git/`)
+- **no cors**: does not send an `Access-Control-Allow-Origin: *` header, so
+  other sites open in your browser can't read what it serves
   - they can still send the requests -- blocking those is up to the browser
     (Chrome's Local Network Access; Firefox and Safari have no equivalent)
-- sends `cache-control: no-cache` header, to prevent stale page loads
+- **no-cache**: sends `cache-control: no-cache` header, to prevent stale page
+  loads
 
 It uses `@std/http`'s `serveDir` to serve files. Normally the above behavior
 takes five flags:
@@ -47,10 +49,10 @@ It needs `-R` (`--allow-read`) to read the content it serves, and `-N`
 `-R=. -N=127.0.0.1:3000` grants exactly the project directory and the one port.
 
 `--lan` also prints the machine's LAN URL, which reads
-`Deno.networkInterfaces()`. This requires `-S` (`--allow-sys`) and is best scoped
-to `-S=networkInterfaces`. Without it, the server still binds and serves, you
-just lose the `Network:` line; in a terminal, Deno prompts for the permission
-first.
+`Deno.networkInterfaces()`. This requires `-S` (`--allow-sys`) and is best
+scoped to `-S=networkInterfaces`. Without it, the server still binds and serves,
+you just lose the `Network:` line; in a terminal, Deno prompts for the
+permission first.
 
 ## Flags
 
