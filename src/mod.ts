@@ -29,6 +29,10 @@ import { serveDir } from "@std/http/file-server";
      same-origin -- isRequestAllowed cannot see it
    - os_boss/src/server/serveOsBoss.ts already does this; check Host against
      loopback, never against the request's own Host
+ - publish to jsr, then point the consumers at jsr:@cymian/serve
+   - create-deno's addWebTasks, todo_app, mouse-training, and audio all reach
+     it by the sibling path ../serve/src/mod.ts
+   - that also unblocks importing it, per the note below
 */
 
 /*
