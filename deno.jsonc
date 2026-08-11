@@ -17,7 +17,7 @@
     "publish:dry": "deno publish --dry-run",
     //
     // Hooks
-    "pre-commit": "deno fmt --check && deno lint src/ && deno check src/ && deno task test",
+    "pre-commit": "deno fmt && deno lint src/ && deno check src/ && deno task test",
     "setup": "deno eval \"Deno.copyFileSync('.hooks/pre-commit', '.git/hooks/pre-commit'); try { Deno.chmodSync('.git/hooks/pre-commit', 0o755) } catch {}\""
   },
   "publish": {

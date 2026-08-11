@@ -132,6 +132,7 @@ const Serve: ServeApi = {
             headers: _NO_CACHE_HEADERS,
           })
           : new Response("cross-site request refused\n", { status: 403 }),
+      // - not readable by client anyway without CORS, but visible in devtools
     );
   },
 
