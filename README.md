@@ -9,9 +9,9 @@ A static dev server with secure and convenient defaults:
 - **no dotfiles**: does not serve dotfiles (e.g. `.env`, `.git/`)
 - **no cors**: does not send an `Access-Control-Allow-Origin: *` header, so
   other sites open in your browser can't read what it serves
-- **no cross-site requests**: refuses them outright, so those sites can't even
-  send one -- which also covers `<script src>` and `<img>` embeds, since they
-  send no `Origin` and so aren't governed by the CORS header
+- **no cross-site requests**: refuses them outright, so those sites get nothing
+  back -- which also covers `<script src>` and `<img>` embeds, since they send
+  no `Origin` and so aren't governed by the CORS header
 - **no-cache**: sends `cache-control: no-cache` header, to prevent stale page
   loads
 
