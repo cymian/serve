@@ -20,19 +20,10 @@
 
 import { serveDir } from "@std/http/file-server";
 
+import { getLanAddresses, isRequestAllowed, parseArgs } from "./helpers.ts";
+
 /*
  @todos
- - refuse a request whose Host is neither loopback nor a LAN address of this
-   machine, which is the DNS rebinding case
-   - the attacker serves a page from attacker.com pointed at 127.0.0.1, so the
-     browser calls us that page's own origin and sends Sec-Fetch-Site:
-     same-origin -- isRequestAllowed cannot see it
-   - os_boss/src/server/serveOsBoss.ts already does this; check Host against
-     loopback, never against the request's own Host
- - allow a cross-site top-level navigation again if something needs one, e.g.
-   an OAuth callback redirected back to localhost
-   - require Sec-Fetch-Dest: document, which is the tab itself; an iframe,
-     frame, object, or embed each name themselves instead
  - publish to jsr, then point the consumers at jsr:@cymian/serve
    - create-deno's addWebTasks, todo_app, mouse-training, and audio all reach
      it by the sibling path ../serve/src/mod.ts
@@ -75,30 +66,6 @@ export interface ServeApi {
       machine only
   */
   start(options?: ServeOptions): Deno.HttpServer<Deno.NetAddr>;
-
-  /**
-   Returns this machine's IPv4 addresses on the local network.
-   - empty when the networkInterfaces permission is absent, so a caller that
-      only wants the URL for display doesn't have to hold it
-  */
-  getLanAddresses(): string[];
-
-  /**
-   Returns true if the request is one a browser page is allowed to make.
-   - every cross-site request is refused, whatever it asked for; a <script src>
-      or <img> embed sends no Origin, so the absent CORS header does not stop
-      the page reading what it loaded
-   - true when no Sec-Fetch-Site arrives, since there is nothing to check --
-      a non-browser client, or an origin browsers don't set it for
-  */
-  isRequestAllowed(request: Request): boolean;
-
-  /**
-   Returns the options named by a command line.
-   - unknown flags are ignored; a flag missing its value, or a port that
-      isn't a number, throws
-  */
-  parseArgs(args: string[]): ServeOptions;
 }
 
 //
@@ -112,23 +79,10 @@ const _NO_CACHE_HEADERS = [
 // - without it browsers heuristically cache off Last-Modified and serve
 //   stale files after a rebuild
 
-const _ALLOWED_FETCH_SITES = [
-  "same-origin", // same scheme, host and port
-  "same-site", // same scheme and domain, i.e. subdomain and port can differ
-  "none", // a user-initiated load: a typed URL, a bookmark
-  null, // header absent: not a browser, or not an origin it's sent to
-];
-// - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site
-// - browsers set Sec-Fetch-* only for a potentially trustworthy URL, so a LAN
-//   address over plain http arrives with none of them
-
 //
 //@namespace
 
 const Serve: ServeApi = {
-  //
-  //## Run
-
   start(options: ServeOptions = {}): Deno.HttpServer<Deno.NetAddr> {
     const port = options.port ?? _DEFAULT_PORT;
     const root = options.root ?? ".";
@@ -140,7 +94,7 @@ const Serve: ServeApi = {
       console.log(`  Local:   http://127.0.0.1:${addr.port}/`);
 
       for (
-        const address of options.isLanAllowed ? Serve.getLanAddresses() : []
+        const address of options.isLanAllowed ? getLanAddresses() : []
       ) {
         console.log(`  Network: http://${address}:${addr.port}/`);
       }
@@ -151,7 +105,7 @@ const Serve: ServeApi = {
     return Deno.serve(
       { port, hostname, onListen },
       (request) =>
-        Serve.isRequestAllowed(request)
+        isRequestAllowed(request)
           ? serveDir(request, {
             fsRoot: root,
             quiet: true,
@@ -162,55 +116,6 @@ const Serve: ServeApi = {
       // - not readable by client anyway without CORS, but visible in devtools
     );
   },
-
-  //
-  //## Helpers
-
-  getLanAddresses(): string[] {
-    try {
-      return Deno.networkInterfaces()
-        .filter((iface) =>
-          iface.family === "IPv4" && !iface.address.startsWith("127.")
-        )
-        .map((iface) => iface.address);
-    } catch {
-      return [];
-    }
-  },
-
-  isRequestAllowed(request: Request): boolean {
-    return _ALLOWED_FETCH_SITES.includes(
-      request.headers.get("sec-fetch-site"),
-    );
-  },
-
-  parseArgs(args: string[]): ServeOptions {
-    const options: ServeOptions = {};
-
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
-
-      // Flags taking a value consume and validate the arg after them
-
-      if (arg === "--port" || arg === "-p") {
-        const next: string | undefined = args[++i];
-        if (next === undefined) throw new Error(`${arg} needs a value`);
-        const port = Number(next);
-        if (!Number.isInteger(port)) {
-          throw new Error(`${arg} needs a port number, got "${next}"`);
-        }
-        options.port = port;
-      } else if (arg === "--root" || arg === "-r") {
-        const next: string | undefined = args[++i];
-        if (next === undefined) throw new Error(`${arg} needs a value`);
-        options.root = next;
-      } // Bare flags
-      else if (arg === "--lan") options.isLanAllowed = true;
-      else if (arg === "--dir-listing") options.isDirListingShown = true;
-    }
-
-    return options;
-  },
 };
 
 //
@@ -218,7 +123,7 @@ const Serve: ServeApi = {
 
 if (import.meta.main) {
   try {
-    Serve.start(Serve.parseArgs(Deno.args));
+    Serve.start(parseArgs(Deno.args));
   } catch (error) {
     // - a flag mistake gets the message, not a stack trace
     console.error(error instanceof Error ? error.message : error);

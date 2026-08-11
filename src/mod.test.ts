@@ -1,52 +1,15 @@
 /**
  @fileoverview
- Covers arg parsing, the bind address, and the response headers -- the things
- a caller can get wrong in a way a running server won't complain about.
+ Covers the bind address, the response headers, and that a refused request gets
+ a 403 -- what start() wires together, rather than what the pieces decide.
 */
 
-import { assertEquals, assertThrows } from "@std/assert";
+import { assertEquals } from "@std/assert";
 
 import Serve from "./mod.ts";
 
 //
 //@main
-
-//## parseArgs
-
-Deno.test("parseArgs: nothing named leaves every option unset, so start() picks the defaults", () => {
-  assertEquals(Serve.parseArgs([]), {});
-});
-
-Deno.test("parseArgs: the long forms", () => {
-  assertEquals(Serve.parseArgs(["--port", "3080", "--root", "src/", "--lan"]), {
-    port: 3080,
-    root: "src/",
-    isLanAllowed: true,
-  });
-});
-
-Deno.test("parseArgs: the short forms", () => {
-  assertEquals(Serve.parseArgs(["-p", "9000", "-r", "dist"]), {
-    port: 9000,
-    root: "dist",
-  });
-});
-
-Deno.test("parseArgs: an unknown flag is skipped without eating the arg after it", () => {
-  assertEquals(Serve.parseArgs(["--nope", "--port", "3080"]), { port: 3080 });
-});
-
-Deno.test("parseArgs: directory listing is opt-in", () => {
-  assertEquals(Serve.parseArgs(["--dir-listing"]), { isDirListingShown: true });
-});
-
-Deno.test("parseArgs: a port that isn't a number throws", () => {
-  assertThrows(() => Serve.parseArgs(["-p", "abc"]), Error, "port number");
-});
-
-Deno.test("parseArgs: a flag missing its value throws", () => {
-  assertThrows(() => Serve.parseArgs(["--root"]), Error, "needs a value");
-});
 
 //## start
 
@@ -86,67 +49,6 @@ Deno.test("start: an unchanged file revalidates to 304, so no-cache costs no tra
 
   assertEquals(second.status, 304);
   await server.shutdown();
-});
-
-//## isRequestAllowed
-
-/** A request as a page on another site would have the browser send it. */
-const crossSiteRequest = (headers: Record<string, string>) =>
-  new Request("http://127.0.0.1/index.html", {
-    headers: { "sec-fetch-site": "cross-site", ...headers },
-  });
-
-Deno.test("isRequestAllowed: a client that sends no Sec-Fetch-Site is allowed", () => {
-  assertEquals(
-    Serve.isRequestAllowed(new Request("http://127.0.0.1/index.html")),
-    true,
-  );
-});
-
-Deno.test("isRequestAllowed: the page's own subresources are allowed", () => {
-  for (const site of ["same-origin", "same-site", "none"]) {
-    assertEquals(
-      Serve.isRequestAllowed(
-        new Request("http://127.0.0.1/index.html", {
-          headers: { "sec-fetch-site": site },
-        }),
-      ),
-      true,
-      site,
-    );
-  }
-});
-
-Deno.test("isRequestAllowed: a cross-site fetch is refused", () => {
-  assertEquals(
-    Serve.isRequestAllowed(crossSiteRequest({ "sec-fetch-mode": "cors" })),
-    false,
-  );
-});
-
-Deno.test("isRequestAllowed: a cross-site <script src> embed is refused, though it sends no Origin", () => {
-  assertEquals(
-    Serve.isRequestAllowed(crossSiteRequest({
-      "sec-fetch-mode": "no-cors",
-      "sec-fetch-dest": "script",
-    })),
-    false,
-  );
-});
-
-Deno.test("isRequestAllowed: a cross-site navigation is refused wherever it lands", () => {
-  for (
-    const destination of ["document", "iframe", "frame", "object", "embed"]
-  ) {
-    assertEquals(
-      Serve.isRequestAllowed(crossSiteRequest({
-        "sec-fetch-mode": "navigate",
-        "sec-fetch-dest": destination,
-      })),
-      false,
-      destination,
-    );
-  }
 });
 
 Deno.test("start: a cross-site request gets a 403 instead of the file", async () => {
