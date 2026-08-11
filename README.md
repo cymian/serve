@@ -2,18 +2,17 @@
 
 A static dev server with secure and convenient defaults:
 
-- binds `127.0.0.1` (loopback -- this machine only) instead of `0.0.0.0` (every
-  network interface, so anything on the network can connect)
+- listens on `127.0.0.1` (connections from this machine only) instead of `0.0.0.0` (connections from any machine on the local network)
 - does not serve directory listings when index.html not present
 - does not serve dotfiles (e.g. `.env`, `.git/`)
 - does not send a `Access-Control-Allow-Origin: *` header, so that non-local websites in your browser can't read responses to any requests they send to your server
   - note they still can send requests -- that is not preventable (@check: except with Local Network Access?)
-- does not cache files, so stale pages are not served
+- sends a 'no-cache' header, to prevent stale page loads
 
 It uses `@std/http`'s `serveDir` to serve files. Normally the above behavior takes five flags:
 
 ```sh
---host 127.0.0.1 --no-dir-listing --no-dotfiles --no-cors -H 'cache-control: no-cache, no-store, must-revalidate'
+--host 127.0.0.1 --no-dir-listing --no-dotfiles --no-cors -H 'cache-control: no-cache'
 ```
 
 You can use flags like `--lan` and `--dir-listing` to opt back in to certain behaviors.
@@ -43,9 +42,9 @@ Run with `-R` to read what it serves, `-N` to bind. Scope both: `-R=. -N=127.0.0
 ## Flags
 
 - `-p`, `--port` — default 8000
-- `-r`, `--root` — default `.`
-- `--lan` — bind every interface, and print the LAN URL
-- `--dir-listing` — list a directory that has no `index.html`
+- `-r`, `--root` — the directory served, default `.`
+- `--lan` — bind to 0.0.0.0, and print the LAN URL
+- `--dir-listing` — serve listings for directories that have no `index.html`
 
 Printing the LAN URL under `--lan` reads `Deno.networkInterfaces()`, which
 needs `-S=networkInterfaces`. Without it the server still binds — Deno just

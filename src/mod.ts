@@ -62,7 +62,7 @@ export interface ServeApi {
 const _DEFAULT_PORT = 8000;
 
 const _NO_CACHE_HEADERS = [
-  "cache-control: no-cache, no-store, must-revalidate",
+  "cache-control: no-cache",
 ];
 // - without it browsers heuristically cache off Last-Modified and serve
 //   stale files after a rebuild
