@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@std/assert@1": "1.0.19",
     "jsr:@std/cli@^1.0.29": "1.0.29",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/fmt@^1.0.10": "1.0.10",
@@ -14,6 +15,12 @@
     "jsr:@std/streams@^1.1.0": "1.1.0"
   },
   "jsr": {
+    "@std/assert@1.0.19": {
+      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
     "@std/cli@1.0.29": {
       "integrity": "fa4ef29130baa834d8a13b7d138240c3a2fcfba740bfb7afa646a360a15ec84f"
     },
@@ -64,11 +71,8 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@std/assert@1",
       "jsr:@std/http@1"
-    ],
-    "links": {
-      "jsr:@cymian/speck@0.1.5": {},
-      "npm:@cymian/speck@0.1.5": {}
-    }
+    ]
   }
 }
