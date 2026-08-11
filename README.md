@@ -9,13 +9,16 @@ A static dev server with secure and convenient defaults:
 - **no dotfiles**: does not serve dotfiles (e.g. `.env`, `.git/`)
 - **no cors**: does not send an `Access-Control-Allow-Origin: *` header, so
   other sites open in your browser can't read what it serves
-  - they can still send the requests -- blocking those is up to the browser
-    (Chrome's Local Network Access; Firefox and Safari have no equivalent)
+- **no cross-site requests**: refuses them outright, so those sites can't even
+  send one -- which also covers `<script src>` and `<img>` embeds, since they
+  send no `Origin` and so aren't governed by the CORS header
+  - a cross-site link or redirect that opens the server in its own tab is still
+    allowed, so an OAuth callback to localhost works
 - **no-cache**: sends `cache-control: no-cache` header, to prevent stale page
   loads
 
-It uses `@std/http`'s `serveDir` to serve files. Normally the above behavior
-takes five flags:
+It uses `@std/http`'s `serveDir` to serve files. Most of the above takes five
+flags to reproduce, and the cross-site refusal isn't on offer at all:
 
 ```sh
 --host 127.0.0.1 --no-dir-listing --no-dotfiles --no-cors -H 'cache-control: no-cache'

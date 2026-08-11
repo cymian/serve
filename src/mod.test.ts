@@ -87,3 +87,95 @@ Deno.test("start: an unchanged file revalidates to 304, so no-cache costs no tra
   assertEquals(second.status, 304);
   await server.shutdown();
 });
+
+//## isRequestAllowed
+
+/** A request as a page on another site would have the browser send it. */
+const crossSiteRequest = (
+  headers: Record<string, string>,
+  method = "GET",
+) =>
+  new Request("http://127.0.0.1/index.html", {
+    method,
+    headers: { "sec-fetch-site": "cross-site", ...headers },
+  });
+
+Deno.test("isRequestAllowed: a client that sends no Sec-Fetch-Site is allowed", () => {
+  assertEquals(
+    Serve.isRequestAllowed(new Request("http://127.0.0.1/index.html")),
+    true,
+  );
+});
+
+Deno.test("isRequestAllowed: the page's own subresources are allowed", () => {
+  for (const site of ["same-origin", "same-site", "none"]) {
+    assertEquals(
+      Serve.isRequestAllowed(
+        new Request("http://127.0.0.1/index.html", {
+          headers: { "sec-fetch-site": site },
+        }),
+      ),
+      true,
+      site,
+    );
+  }
+});
+
+Deno.test("isRequestAllowed: a cross-site fetch is refused", () => {
+  assertEquals(
+    Serve.isRequestAllowed(crossSiteRequest({ "sec-fetch-mode": "cors" })),
+    false,
+  );
+});
+
+Deno.test("isRequestAllowed: a cross-site <script src> embed is refused, though it sends no Origin", () => {
+  assertEquals(
+    Serve.isRequestAllowed(crossSiteRequest({
+      "sec-fetch-mode": "no-cors",
+      "sec-fetch-dest": "script",
+    })),
+    false,
+  );
+});
+
+Deno.test("isRequestAllowed: a cross-site load into its own tab is allowed, e.g. an OAuth redirect", () => {
+  assertEquals(
+    Serve.isRequestAllowed(crossSiteRequest({
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-dest": "document",
+    })),
+    true,
+  );
+});
+
+Deno.test("isRequestAllowed: a cross-site navigation into an embed is refused", () => {
+  assertEquals(
+    Serve.isRequestAllowed(crossSiteRequest({
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-dest": "embed",
+    })),
+    false,
+  );
+});
+
+Deno.test("isRequestAllowed: a cross-site navigation that isn't a GET is refused", () => {
+  assertEquals(
+    Serve.isRequestAllowed(crossSiteRequest({
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-dest": "document",
+    }, "POST")),
+    false,
+  );
+});
+
+Deno.test("start: a cross-site request gets a 403 instead of the file", async () => {
+  const server = Serve.start({ port: 0, root: "src/" });
+
+  const response = await fetch(`http://127.0.0.1:${server.addr.port}/mod.ts`, {
+    headers: { "sec-fetch-site": "cross-site", "sec-fetch-mode": "cors" },
+  });
+  await response.text();
+
+  assertEquals(response.status, 403);
+  await server.shutdown();
+});

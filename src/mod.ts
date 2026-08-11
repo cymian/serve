@@ -6,6 +6,7 @@
  - no dir listing
  - no dotfiles
  - no CORS
+ - no cross-site requests
 
  @std/http's serveDir does the serving; this module pins how it's configured.
 
@@ -18,14 +19,6 @@
 */
 
 import { serveDir } from "@std/http/file-server";
-
-/*
- @todos
- - refuse requests carrying `Sec-Fetch-Site: cross-site`, so a page in the
-   browser can't reach the server at all
-   - covers <script src> and <img> embeds too, which send no Origin header
-     and so are unaffected by the missing CORS header
-*/
 
 /*
  @notes
@@ -69,6 +62,18 @@ export interface ServeApi {
   getLanAddresses(): string[];
 
   /**
+   Returns true if the request is one a browser page is allowed to make.
+   - a cross-site subresource request is refused, which covers <script src>
+      and <img> embeds; those send no Origin, so the absent CORS header does
+      not stop a page reading what they load
+   - a cross-site top-level GET navigation is still allowed, e.g. an OAuth
+      redirect back to localhost
+   - true when the browser sends no Sec-Fetch-Site at all, since only a
+      browser can be held to this and only a browser sets the header
+  */
+  isRequestAllowed(request: Request): boolean;
+
+  /**
    Returns the options named by a command line.
    - unknown flags are ignored; a flag missing its value, or a port that
       isn't a number, throws
@@ -86,6 +91,9 @@ const _NO_CACHE_HEADERS = [
 ];
 // - without it browsers heuristically cache off Last-Modified and serve
 //   stale files after a rebuild
+
+const _ALLOWED_FETCH_SITES = ["same-origin", "same-site", "none"];
+// - "none" is a user-initiated load: a typed URL, a bookmark
 
 //
 //@namespace
@@ -111,17 +119,19 @@ const Serve: ServeApi = {
       }
     };
 
-    // Serve the root, with directory listing off unless asked for
+    // Serve the root, refusing what a cross-site page asked for
 
     return Deno.serve(
       { port, hostname, onListen },
       (request) =>
-        serveDir(request, {
-          fsRoot: root,
-          quiet: true,
-          showDirListing: options.isDirListingShown ?? false,
-          headers: _NO_CACHE_HEADERS,
-        }),
+        Serve.isRequestAllowed(request)
+          ? serveDir(request, {
+            fsRoot: root,
+            quiet: true,
+            showDirListing: options.isDirListingShown ?? false,
+            headers: _NO_CACHE_HEADERS,
+          })
+          : new Response("cross-site request refused\n", { status: 403 }),
     );
   },
 
@@ -138,6 +148,22 @@ const Serve: ServeApi = {
     } catch {
       return [];
     }
+  },
+
+  isRequestAllowed(request: Request): boolean {
+    const site = request.headers.get("sec-fetch-site");
+
+    // If the header is absent or names a trusted relationship, allow
+
+    if (site === null || _ALLOWED_FETCH_SITES.includes(site)) return true;
+
+    // Allow a cross-site load into its own tab, but not into an embed
+
+    const destination = request.headers.get("sec-fetch-dest");
+
+    return request.headers.get("sec-fetch-mode") === "navigate" &&
+      request.method === "GET" &&
+      destination !== "object" && destination !== "embed";
   },
 
   parseArgs(args: string[]): ServeOptions {
