@@ -4,9 +4,9 @@
  running server won't complain about getting wrong.
 */
 
-import { assertEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertMatch, assertThrows } from "@std/assert";
 
-import { isRequestAllowed, parseArgs } from "./helpers.ts";
+import { getLanAddresses, isRequestAllowed, parseArgs } from "./helpers.ts";
 
 //
 //@main
@@ -46,6 +46,32 @@ Deno.test("parseArgs: a port that isn't a number throws", () => {
 
 Deno.test("parseArgs: a flag missing its value throws", () => {
   assertThrows(() => parseArgs(["--root"]), Error, "needs a value");
+});
+
+//## getLanAddresses
+
+/** IPv4 in dotted-quad form, which is the only shape getLanAddresses keeps. */
+const IPV4_PATTERN = /^\d{1,3}(\.\d{1,3}){3}$/;
+
+Deno.test({
+  name:
+    "getLanAddresses: returns dotted-quad IPv4 addresses, never a loopback one",
+  permissions: { sys: ["networkInterfaces"] },
+  fn: () => {
+    for (const address of getLanAddresses()) {
+      assertMatch(address, IPV4_PATTERN);
+      assertEquals(address.startsWith("127."), false, address);
+    }
+  },
+});
+
+Deno.test({
+  name:
+    "getLanAddresses: empty rather than throwing when the permission is absent",
+  permissions: { sys: false },
+  fn: () => {
+    assertEquals(getLanAddresses(), []);
+  },
 });
 
 //## isRequestAllowed
