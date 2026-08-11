@@ -12,8 +12,8 @@ A static dev server with secure and convenient defaults:
 - **no cross-site requests**: refuses them outright, so those sites can't even
   send one -- which also covers `<script src>` and `<img>` embeds, since they
   send no `Origin` and so aren't governed by the CORS header
-  - a cross-site link or redirect that opens the server in its own tab is still
-    allowed, so an OAuth callback to localhost works
+  - a cross-site link or redirect that opens the server in its own tab is
+    refused too, so an OAuth callback redirected back to localhost won't land
 - **no-cache**: sends `cache-control: no-cache` header, to prevent stale page
   loads
 
