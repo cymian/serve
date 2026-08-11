@@ -67,10 +67,23 @@ Deno.test("start: responses carry no-cache and no CORS header", async () => {
   const response = await fetch(`http://127.0.0.1:${server.addr.port}/mod.ts`);
   await response.text();
 
-  assertEquals(
-    response.headers.get("cache-control"),
-    "no-cache, no-store, must-revalidate",
-  );
+  assertEquals(response.headers.get("cache-control"), "no-cache");
   assertEquals(response.headers.get("access-control-allow-origin"), null);
+  await server.shutdown();
+});
+
+Deno.test("start: an unchanged file revalidates to 304, so no-cache costs no transfer", async () => {
+  const server = Serve.start({ port: 0, root: "src/" });
+  const url = `http://127.0.0.1:${server.addr.port}/mod.ts`;
+
+  const first = await fetch(url);
+  await first.text();
+
+  const second = await fetch(url, {
+    headers: { "if-none-match": first.headers.get("etag")! },
+  });
+  await second.body?.cancel();
+
+  assertEquals(second.status, 304);
   await server.shutdown();
 });
