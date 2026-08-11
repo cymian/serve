@@ -45,10 +45,9 @@ await server.shutdown();
 ### Permissions
 
 It needs `-R` (`--allow-read`) to read the content it serves, and `-N`
-(`--allow-network`) to serve it. Scope both to limit exposure: point `-R` at the
-same directory as `-r`, so `-R=src` with `-r src/` leaves everything above the
-root unreadable to the process, dotfiles included. Loading the module itself is
-not a read, so the scope can stay this tight.
+(`--allow-network`) to serve it. Scope both to limit exposure, e.g.
+`-R=src -N=127.0.0.1:3000 -r src/` grants only the served directory and the one
+port.
 
 `--lan` also prints the machine's LAN URL, which reads
 `Deno.networkInterfaces()`. This requires `-S` (`--allow-sys`) and is best
