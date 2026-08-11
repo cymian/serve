@@ -1,8 +1,13 @@
 /**
  @fileoverview
- A static dev server with the defaults a dev server should have: loopback-only,
- no-cache, no dir listing, no dotfiles, no CORS. @std/http's serveDir does
- the serving; this module pins how it's configured.
+ A static dev server with the defaults a dev server should have:
+ - loopback-only
+ - no-cache
+ - no dir listing
+ - no dotfiles
+ - no CORS
+
+ @std/http's serveDir does the serving; this module pins how it's configured.
 
  Run it:
    deno run -R=. -N=127.0.0.1:3080 jsr:@cymian/serve -p 3080 -r src/
