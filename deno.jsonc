@@ -12,8 +12,6 @@
     "check": "deno check src/",
     "lint": "deno lint src/",
     "test": "deno test -R=src -N=127.0.0.1,0.0.0.0 -S=networkInterfaces src/",
-    // - the sys grant is what lets a test drop it again, to check the path
-    //   getLanAddresses takes when the permission is absent
     //
     // Publish
     "publish:dry": "deno publish --dry-run",
