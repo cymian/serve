@@ -1,0 +1,40 @@
+{
+  "name": "@cymian/serve",
+  "version": "0.1.0",
+  "exports": "./src/mod.ts",
+  "license": "MIT",
+  "imports": {
+    "@std/http": "jsr:@std/http@^1",
+    "@cymian/speck": "../speck/src/mod.ts"
+  },
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "tasks": {
+    // Check
+    "check": "deno check src/",
+    "lint": "deno lint src/",
+    "test": "deno run -A --config deno.jsonc ../speck/src/cli/runTestsCli.ts src",
+    // - explicit --config: discovery would otherwise follow the speck
+    //   entrypoint and miss this project's import map
+    //
+    // Publish
+    "publish:dry": "deno publish --dry-run",
+    //
+    // Hooks
+    "pre-commit": "deno fmt --check src/ && deno lint src/ && deno check src/ && deno task test --quiet",
+    "setup": "deno eval \"Deno.copyFileSync('.hooks/pre-commit', '.git/hooks/pre-commit'); try { Deno.chmodSync('.git/hooks/pre-commit', 0o755) } catch {}\""
+  },
+  "publish": {
+    "exclude": ["**/*.test.ts", ".hooks/"]
+  },
+  // - tests reach speck through a sibling path, which has no meaning to a
+  //   consumer resolving the published package
+  "fmt": {
+    "proseWrap": "preserve"
+  },
+  "exclude": ["node_modules/"]
+}

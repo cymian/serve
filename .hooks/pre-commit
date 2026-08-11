@@ -1,0 +1,14 @@
+#!/bin/sh
+
+deno task pre-commit || {
+  echo "\033[1;31mFAILED TO COMMIT\033[0m"
+  # Play sound on macOS
+  if [ "$(uname)" = "Darwin" ]; then
+    osascript -e 'beep'
+  fi
+  # Play sound on Linux
+  if [ "$(uname)" = "Linux" ]; then
+    echo -e "\a"
+  fi
+  exit 1
+}
