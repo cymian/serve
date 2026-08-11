@@ -14,6 +14,20 @@
 
 import { serveDir } from "@std/http/file-server";
 
+/*
+ @todos
+ - refuse requests carrying `Sec-Fetch-Site: cross-site`, so a page in the
+   browser can't reach the server at all
+   - covers <script src> and <img> embeds too, which send no Origin header
+     and so are unaffected by the missing CORS header
+*/
+
+/*
+ @notes
+ - serveDir's ETag is size + mtime, so a build that preserves mtime revalidates
+   to 304 with changed content -- normal editing moves mtime
+*/
+
 //
 //@types
 
@@ -36,8 +50,9 @@ export interface ServeOptions {
 export interface ServeApi {
   /**
    Starts a static file server and returns it, already listening.
-   - @sideEffect binds a port, and prints the URLs it's reachable at
-   - loopback unless isLanAllowed, so the default serves this machine only
+   - @sideEffect binds an address and port, and prints the URLs it's reachable at
+   - loopback unless isLanAllowed, so the default accepts connections from this
+      machine only
   */
   start(options?: ServeOptions): Deno.HttpServer<Deno.NetAddr>;
 
