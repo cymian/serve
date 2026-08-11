@@ -22,9 +22,5 @@
   },
   "publish": {
     "exclude": ["**/*.test.ts", ".hooks/"]
-  },
-  "fmt": {
-    "proseWrap": "preserve"
-    // - the default rewraps hand-wrapped markdown
   }
 }

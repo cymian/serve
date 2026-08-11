@@ -1,21 +1,22 @@
 # @cymian/serve
 
-A static dev server with the defaults a dev server should have:
+A static dev server with secure and convenient defaults:
 
-- binds to machine (`127.0.0.1`) instead of local network (`0.0.0.0`)
+- binds `127.0.0.1` (loopback -- this machine only) instead of `0.0.0.0` (every
+  network interface, so anything on the network can connect)
 - does not serve directory listings when index.html not present
 - does not serve dotfiles (e.g. `.env`, `.git/`)
 - does not send a `Access-Control-Allow-Origin: *` header, so that non-local websites in your browser can't read responses to any requests they send to your server
   - note they still can send requests -- that is not preventable (@check: except with Local Network Access?)
 - does not cache files, so stale pages are not served
 
-Normally that takes five flags:
+It uses `@std/http`'s `serveDir` to serve files. Normally the above behavior takes five flags:
 
 ```sh
 --host 127.0.0.1 --no-dir-listing --no-dotfiles --no-cors -H 'cache-control: no-cache, no-store, must-revalidate'
 ```
 
-This package uses `@std/http`'s `serveDir` to serve the files, with the defaults mentioned above in place. Use `--lan` and `--dir-listing` to opt back in.
+You can use flags like `--lan` and `--dir-listing` to opt back in to certain behaviors.
 
 ## Use
 
