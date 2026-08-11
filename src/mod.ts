@@ -21,9 +21,23 @@
 import { serveDir } from "@std/http/file-server";
 
 /*
+ @todos
+ - refuse a request whose Host is neither loopback nor a LAN address of this
+   machine, which is the DNS rebinding case
+   - the attacker serves a page from attacker.com pointed at 127.0.0.1, so the
+     browser calls us that page's own origin and sends Sec-Fetch-Site:
+     same-origin -- isRequestAllowed cannot see it
+   - os_boss/src/server/serveOsBoss.ts already does this; check Host against
+     loopback, never against the request's own Host
+*/
+
+/*
  @notes
  - serveDir's ETag is size + mtime, so a build that preserves mtime revalidates
    to 304 with changed content -- normal editing moves mtime
+ - importing this module from another project needs @std/http in that project's
+   import map and deno.ns in its lib; until it's published to jsr, consumers
+   should run it as a task entrypoint rather than import it
 */
 
 //
