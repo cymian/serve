@@ -18,7 +18,9 @@
     //
     // Hooks
     "pre-commit": "deno fmt && deno lint src/ && deno check src/ && deno task test",
-    "setup": "deno eval \"Deno.copyFileSync('.hooks/pre-commit', '.git/hooks/pre-commit'); try { Deno.chmodSync('.git/hooks/pre-commit', 0o755) } catch {}\""
+    "setup": "git config core.hooksPath .hooks"
+    // - one-time per clone: .git/config is not trackable, so nothing carries
+    //   the setting with the repo
   },
   "publish": {
     "exclude": ["**/*.test.ts", ".hooks/"]
