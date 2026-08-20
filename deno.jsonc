@@ -1,7 +1,12 @@
 {
   "name": "@cymian/serve",
   "version": "0.1.0",
-  "exports": "./src/mod.ts",
+  "exports": {
+    ".": "./src/mod.ts",
+    "./requestGuard": "./src/requestGuard.ts"
+    // - its own entry so an app server can take the guard without pulling in
+    //   @std/http, which only the static server needs
+  },
   "license": "MIT",
   "imports": {
     "@std/assert": "jsr:@std/assert@^1",

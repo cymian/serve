@@ -12,6 +12,10 @@ A static dev server with secure and convenient defaults:
 - **no cross-site requests**: refuses them outright, so those sites get nothing
   back -- which also covers `<script src>` and `<img>` embeds, since they send
   no `Origin` and so aren't governed by the CORS header
+- **no foreign `Host`**: refuses a request addressed to any name but a loopback
+  one on the bound port, which is what DNS rebinding relies on -- the attacker
+  points their own domain at `127.0.0.1`, and every same-origin check then reads
+  as satisfied
 - **no-cache**: sends `cache-control: no-cache` header, to prevent stale page
   loads
 
@@ -42,6 +46,37 @@ import { serve } from "jsr:@cymian/serve";
 const server = serve({ port: 3000, root: "src/" });
 await server.shutdown();
 ```
+
+### Guarding your own server
+
+`serve` is for static files. When you have a server of your own -- routes, a
+build step, an API -- take just the guard:
+
+```ts
+import { createRequestGuard } from "jsr:@cymian/serve/requestGuard";
+
+const guard = createRequestGuard({ port: 3919, clientHeader: "x-myapp" });
+
+Deno.serve({ port: 3919, hostname: "127.0.0.1" }, (request) => {
+  const refusal = guard(request);
+  if (refusal) return refusal;
+
+  // ... your routes
+});
+```
+
+It checks four things, in order: the `Host` names this server, the request isn't
+cross-site, a mutation carries no foreign `Origin`, and anything under `/api/`
+carries `clientHeader`.
+
+That last one is why the value is never read -- a header outside the small set
+browsers treat as simple can't be sent without a successful preflight, and a
+`no-cors` POST, the one shape that reaches a local server uninvited, can't send
+one at all. Your page adds the header to its own `fetch` calls; pass
+`isPathGuarded` if the paths needing it aren't `/api/`.
+
+This entry point pulls in no dependencies. Importing `@cymian/serve` itself
+brings `@std/http` along, which only the static server needs.
 
 ### Permissions
 
