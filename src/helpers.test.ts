@@ -1,12 +1,12 @@
 /**
  @fileoverview
- Covers the command-line parse and the cross-site check -- the two decisions a
- running server won't complain about getting wrong.
+ Covers the command-line parse -- the decision a running server won't complain
+ about getting wrong.
 */
 
 import { assertEquals, assertMatch, assertThrows } from "@std/assert";
 
-import { getLanAddresses, isRequestAllowed, parseArgs } from "./helpers.ts";
+import { getLanAddresses, parseArgs } from "./helpers.ts";
 
 //
 //@main
@@ -72,65 +72,4 @@ Deno.test({
   fn: () => {
     assertEquals(getLanAddresses(), []);
   },
-});
-
-//## isRequestAllowed
-
-/** A request as a page on another site would have the browser send it. */
-const crossSiteRequest = (headers: Record<string, string>) =>
-  new Request("http://127.0.0.1/index.html", {
-    headers: { "sec-fetch-site": "cross-site", ...headers },
-  });
-
-Deno.test("isRequestAllowed: a client that sends no Sec-Fetch-Site is allowed", () => {
-  assertEquals(
-    isRequestAllowed(new Request("http://127.0.0.1/index.html")),
-    true,
-  );
-});
-
-Deno.test("isRequestAllowed: the page's own subresources are allowed", () => {
-  for (const site of ["same-origin", "same-site", "none"]) {
-    assertEquals(
-      isRequestAllowed(
-        new Request("http://127.0.0.1/index.html", {
-          headers: { "sec-fetch-site": site },
-        }),
-      ),
-      true,
-      site,
-    );
-  }
-});
-
-Deno.test("isRequestAllowed: a cross-site fetch is refused", () => {
-  assertEquals(
-    isRequestAllowed(crossSiteRequest({ "sec-fetch-mode": "cors" })),
-    false,
-  );
-});
-
-Deno.test("isRequestAllowed: a cross-site <script src> embed is refused, though it sends no Origin", () => {
-  assertEquals(
-    isRequestAllowed(crossSiteRequest({
-      "sec-fetch-mode": "no-cors",
-      "sec-fetch-dest": "script",
-    })),
-    false,
-  );
-});
-
-Deno.test("isRequestAllowed: a cross-site navigation is refused wherever it lands", () => {
-  for (
-    const destination of ["document", "iframe", "frame", "object", "embed"]
-  ) {
-    assertEquals(
-      isRequestAllowed(crossSiteRequest({
-        "sec-fetch-mode": "navigate",
-        "sec-fetch-dest": destination,
-      })),
-      false,
-      destination,
-    );
-  }
 });

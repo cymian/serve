@@ -7,6 +7,7 @@
  - no dotfiles
  - no CORS
  - no cross-site requests
+ - no requests addressed to a name this machine doesn't answer to
 
  @std/http's serveDir does the serving; this module pins how it's configured.
 
@@ -20,7 +21,10 @@
 
 import { serveDir } from "@std/http/file-server";
 
-import { getLanAddresses, isRequestAllowed, parseArgs } from "./helpers.ts";
+import { getLanAddresses, parseArgs } from "./helpers.ts";
+import { createRequestGuard } from "./requestGuard.ts";
+
+import type { RequestGuard } from "./requestGuard.ts";
 
 /*
  @todos
@@ -81,9 +85,17 @@ export function serve(
   const root = options.root ?? ".";
   const hostname = options.isLanAllowed ? "0.0.0.0" : "127.0.0.1";
 
-  // Announce where it can be reached, once listening
+  let guard: RequestGuard | null = null;
+
+  // Build the guard and announce the URLs, once the bound port is known
 
   const onListen = (addr: Deno.NetAddr) => {
+    guard = createRequestGuard({
+      port: addr.port,
+      isLanAllowed: options.isLanAllowed,
+    });
+    // - here rather than above, because port 0 doesn't settle until it binds
+
     console.log(`  Local:   http://127.0.0.1:${addr.port}/`);
 
     for (const address of options.isLanAllowed ? getLanAddresses() : []) {
@@ -91,20 +103,22 @@ export function serve(
     }
   };
 
-  // Serve the root, refusing what a cross-site page asked for
+  // Serve the root to what the guard admits
 
   return Deno.serve(
     { port, hostname, onListen },
-    (request) =>
-      isRequestAllowed(request)
-        ? serveDir(request, {
-          fsRoot: root,
-          quiet: true,
-          showDirListing: options.isDirListingShown ?? false,
-          headers: _NO_CACHE_HEADERS,
-        })
-        : new Response("cross-site request refused\n", { status: 403 }),
-    // - not readable by client anyway without CORS, but visible in devtools
+    (request) => {
+      const refusal = guard?.(request);
+      if (refusal) return refusal;
+      // - not readable by client anyway without CORS, but visible in devtools
+
+      return serveDir(request, {
+        fsRoot: root,
+        quiet: true,
+        showDirListing: options.isDirListingShown ?? false,
+        headers: _NO_CACHE_HEADERS,
+      });
+    },
   );
 }
 
