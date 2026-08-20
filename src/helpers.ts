@@ -1,7 +1,7 @@
 /**
  @fileoverview
- What mod.ts assembles a server out of: the command-line parse and the LAN
- address lookup.
+ What mod.ts assembles a server out of, that isn't a decision of its own: the
+ command-line parse.
 
  Internal to the package -- neither entrypoint deno.jsonc names re-exports it,
  so nothing here is reachable from outside.
@@ -11,23 +11,6 @@ import type { ServeOptions } from "./mod.ts";
 
 //
 //@fns
-
-/**
- Returns this machine's IPv4 addresses on the local network.
- - empty when the networkInterfaces permission is absent, so a caller that only
-    wants the URL for display doesn't have to hold it
-*/
-export function getLanAddresses(): string[] {
-  try {
-    return Deno.networkInterfaces()
-      .filter((iface) =>
-        iface.family === "IPv4" && !iface.address.startsWith("127.")
-      )
-      .map((iface) => iface.address);
-  } catch {
-    return [];
-  }
-}
 
 /**
  Returns the options named by a command line.

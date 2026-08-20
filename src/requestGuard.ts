@@ -11,6 +11,9 @@
 
  A static server needs the first two checks; the rest earn their place once a
  route mutates something.
+
+ Imports nothing but the address lookup, so a consumer taking the guard alone
+ doesn't typecheck the static server or resolve its dependencies.
 */
 
 /*
@@ -21,7 +24,7 @@
      frame, object, or embed each name themselves instead
 */
 
-import { getLanAddresses } from "./helpers.ts";
+import getLanAddresses from "./getLanAddresses.ts";
 
 //
 //@types

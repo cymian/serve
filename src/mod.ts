@@ -21,7 +21,8 @@
 
 import { serveDir } from "@std/http/file-server";
 
-import { getLanAddresses, parseArgs } from "./helpers.ts";
+import getLanAddresses from "./getLanAddresses.ts";
+import { parseArgs } from "./helpers.ts";
 import { createRequestGuard } from "./requestGuard.ts";
 
 import type { RequestGuard } from "./requestGuard.ts";
@@ -92,7 +93,7 @@ export function serve(
   const onListen = (addr: Deno.NetAddr) => {
     guard = createRequestGuard({
       port: addr.port,
-      isLanAllowed: options.isLanAllowed,
+      isLanAllowed: options.isLanAllowed ?? false,
     });
     // - here rather than above, because port 0 doesn't settle until it binds
 
