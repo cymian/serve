@@ -6,12 +6,15 @@ A static dev server with secure and convenient defaults:
   instead of `0.0.0.0` (connections from any machine on the local network)
 - **no dir listings**: does not serve directory listings when there's no
   `index.html`
-- **no dotfiles**: does not serve dotfiles (e.g. `.env`, `.git/`)
+- **no dotfiles**: does not serve dotfiles (e.g. `.env`, `.git/`) — by name, so
+  a symlink pointing at one still serves it (see [Permissions](#permissions))
 - **no cors**: does not send an `Access-Control-Allow-Origin: *` header, so
   other sites open in your browser can't read what it serves
 - **no cross-site requests**: refuses them outright, so those sites get nothing
   back — which also covers `<script src>` and `<img>` embeds, since they send no
   `Origin` and so aren't governed by the CORS header
+  - "site" is the browser's sense of it, which ignores the port: a page from
+    another dev server on `127.0.0.1` is same-site, and is admitted
 - **no foreign `Host`**: refuses a request addressed to any name but a loopback
   one on the bound port, which is what DNS rebinding relies on — the attacker
   points their own domain at `127.0.0.1`, and every same-origin check then reads
@@ -91,6 +94,12 @@ It needs `-R` (`--allow-read`) to read the content it serves, and `-N`
 `-R=src -N=127.0.0.1:3000 -r src/` grants only the served directory and the one
 port.
 
+Scoping `-R` does not contain a symlink, though. Deno checks the permission
+against the path as written, and the dotfile rule matches on the URL, so a link
+in the served root reaches what it names — a dotfile, or a file outside the
+granted directory — and serves it under whatever name the link carries. Serve a
+root whose links you know.
+
 `--lan` reads `Deno.networkInterfaces()` for the machine's LAN addresses, so it
 needs `-S` (`--allow-sys`), best scoped to `-S=networkInterfaces`. Those
 addresses are both what the `Network:` line prints and what the guard admits a
@@ -104,9 +113,11 @@ it.
 - `-r`, `--root` — the directory served, default `.`
 - `--lan` — bind to `0.0.0.0`, print the LAN URL, and admit a `Host` naming one
   of this machine's LAN addresses
-  - browsers send `Sec-Fetch-*` only to a trustworthy URL, so a request to a LAN
-    address over plain http arrives without them, and the cross-site check has
-    nothing to read
+  - browsers send `Sec-Fetch-*` only to a trustworthy URL, and no `Origin` on a
+    read, so a request to a LAN address over plain http arrives with nothing for
+    the cross-site check or the mutation check to read. What is left is the
+    `Host` check, which every client on the network passes. `--lan` serves the
+    network; it does not guard it
 - `--dir-listing` — serve listings for directories that have no `index.html`
 - `-h`, `--help` — print the flags and exit
 
