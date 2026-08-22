@@ -1,0 +1,16 @@
+# Config file folding
+
+This file anchors VS Code's file-nesting rules: the repo's root-level config
+files nest under it in the explorer, and the `$` sorts it above the source
+directories. To enable, add the following to your VS Code settings.json and
+adjust the list to your own config surface:
+
+```jsonc
+"explorer.fileNesting.enabled": true,
+"explorer.fileNesting.patterns": {
+  "package.json": "-package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock",
+  // - VS Code nests lockfiles under package.json by default. Prefix with '-' so
+  //    package-lock.json nests under $config instead.
+  "$config": ".editorconfig, .gitattributes, .gitignore, deno.json, deno.jsonc, deno.lock, package.json, package-lock.json, tsconfig.*"
+},
+```
