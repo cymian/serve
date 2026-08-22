@@ -64,6 +64,15 @@ const _NO_CACHE_HEADERS = [
 // - without it browsers heuristically cache off Last-Modified and serve
 //   stale files after a rebuild
 
+const _USAGE = `Usage: deno run -R -N jsr:@cymian/serve [options]
+
+  -p, --port <number>  port to listen on (default ${_DEFAULT_PORT})
+  -r, --root <dir>     directory served, relative to the cwd (default ".")
+      --lan            bind 0.0.0.0, print the LAN URL, and admit LAN hosts
+      --dir-listing    list a directory that has no index.html
+  -h, --help           print this
+`;
+
 //
 //@fns
 
@@ -86,24 +95,18 @@ export function serve(
 ): Deno.HttpServer<Deno.NetAddr> {
   const port = options.port ?? _DEFAULT_PORT;
   const root = options.root ?? ".";
-  const hostname = options.isLanAllowed ? "0.0.0.0" : "127.0.0.1";
+  const isLanAllowed = options.isLanAllowed ?? false;
+  const hostname = isLanAllowed ? "0.0.0.0" : "127.0.0.1";
 
   let guard: RequestGuard | null = null;
 
   // Build the guard and announce the URLs
 
   const onListen = (addr: Deno.NetAddr) => {
-    guard = createRequestGuard({
-      port: addr.port,
-      isLanAllowed: options.isLanAllowed ?? false,
-    });
+    guard = createRequestGuard({ port: addr.port, isLanAllowed });
     // - here rather than above, because port 0 doesn't settle until it binds
 
-    console.log(`  Local:   http://127.0.0.1:${addr.port}/`);
-
-    for (const address of options.isLanAllowed ? getLanAddresses() : []) {
-      console.log(`  Network: http://${address}:${addr.port}/`);
-    }
+    _printUrls(addr.port, isLanAllowed);
   };
 
   // Serve the root to what the guard admits
@@ -118,16 +121,51 @@ export function serve(
         fsRoot: root,
         quiet: true,
         showDirListing: options.isDirListingShown ?? false,
+        showDotfiles: false,
         headers: _NO_CACHE_HEADERS,
       });
+      // - showDotfiles is serveDir's own default, pinned because it is one of
+      //   the defaults this package promises
     },
   );
+}
+
+//
+//@helpers
+
+/** Prints the URLs the server is reachable at, or why the LAN ones are absent. */
+function _printUrls(port: number, isLanAllowed: boolean): void {
+  console.log(`  Local:   http://127.0.0.1:${port}/`);
+
+  if (!isLanAllowed) return;
+
+  const lanAddresses = getLanAddresses();
+
+  if (lanAddresses.length === 0) {
+    console.log(
+      "  Network: no LAN address found, so LAN requests will be refused — grant -S=networkInterfaces",
+    );
+    return;
+  }
+
+  for (const address of lanAddresses) {
+    console.log(`  Network: http://${address}:${port}/`);
+  }
 }
 
 //
 //@main
 
 if (import.meta.main) {
+  // Answer --help rather than serving
+
+  if (Deno.args.includes("-h") || Deno.args.includes("--help")) {
+    console.log(_USAGE);
+    Deno.exit(0);
+  }
+
+  // Serve what the command line names
+
   try {
     serve(parseArgs(Deno.args));
   } catch (error) {

@@ -15,8 +15,9 @@ import type { ServeOptions } from "./mod.ts";
 
 /**
  Returns the options named by a command line.
- - unknown flags are ignored; a flag missing its value, or a port that isn't a
-    number, throws
+ - anything unrecognized throws, as does a flag missing its value or a port
+    outside 0-65535
+ - `--help` never reaches here; mod.ts's CLI entry answers it first
 */
 function parseArgs(args: string[]): ServeOptions {
   const options: ServeOptions = {};
@@ -30,11 +31,10 @@ function parseArgs(args: string[]): ServeOptions {
       case "--port":
       case "-p": {
         const value = _takeValue(arg, args[++i]);
-        const port = Number(value);
-        if (!Number.isInteger(port)) {
+        if (!/^\d+$/.test(value) || Number(value) > 65535) {
           throw new Error(`${arg} needs a port number, got "${value}"`);
         }
-        options.port = port;
+        options.port = Number(value);
         break;
       }
       case "--root":
@@ -50,6 +50,9 @@ function parseArgs(args: string[]): ServeOptions {
       case "--dir-listing":
         options.isDirListingShown = true;
         break;
+
+      default:
+        throw new Error(`unknown argument "${arg}"; try --help`);
     }
   }
 
