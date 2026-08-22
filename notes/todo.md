@@ -40,7 +40,7 @@ two steps it unblocks.
   - the `@notes` bullet below it about running rather than importing goes at the
     same time -- it only holds while the package is unpublished
 - **file the remaining source `@todos` as issues once the repo is public.** The
-  cross-site navigation allowance in [](../src/requestGuard.ts) is the one left
+  top-level navigation allowance in [](../src/requestGuard.ts) is the one left
   after the two above, and so is everything under The guard's edges.
 
 ## The served root

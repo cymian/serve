@@ -75,7 +75,7 @@ Deno.serve({ port: 3919, hostname: "127.0.0.1" }, (request) => {
 It checks four things, in order:
 
 1. the `Host` names this server
-2. the request isn't cross-site
+2. the request isn't on another origin's behalf
 3. a mutation carries no foreign `Origin`
 4. anything under `/api/` carries `clientHeader`
 
