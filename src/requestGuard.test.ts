@@ -6,12 +6,12 @@
 
 import { assertEquals } from "@std/assert";
 
-import { createRequestGuard, isRequestAllowed } from "./requestGuard.ts";
+import { createRequestGuard, isFetchSiteAllowed } from "./requestGuard.ts";
 
 //
 //@main
 
-//## isRequestAllowed
+//## isFetchSiteAllowed
 
 /** A request as a page on another site would have the browser send it. */
 const crossSiteRequest = (headers: Record<string, string>) =>
@@ -19,17 +19,17 @@ const crossSiteRequest = (headers: Record<string, string>) =>
     headers: { "sec-fetch-site": "cross-site", ...headers },
   });
 
-Deno.test("isRequestAllowed: a client that sends no Sec-Fetch-Site is allowed", () => {
+Deno.test("isFetchSiteAllowed: a client that sends no Sec-Fetch-Site is allowed", () => {
   assertEquals(
-    isRequestAllowed(new Request("http://127.0.0.1/index.html")),
+    isFetchSiteAllowed(new Request("http://127.0.0.1/index.html")),
     true,
   );
 });
 
-Deno.test("isRequestAllowed: the page's own subresources are allowed", () => {
+Deno.test("isFetchSiteAllowed: the page's own subresources are allowed", () => {
   for (const site of ["same-origin", "same-site", "none"]) {
     assertEquals(
-      isRequestAllowed(
+      isFetchSiteAllowed(
         new Request("http://127.0.0.1/index.html", {
           headers: { "sec-fetch-site": site },
         }),
@@ -40,16 +40,16 @@ Deno.test("isRequestAllowed: the page's own subresources are allowed", () => {
   }
 });
 
-Deno.test("isRequestAllowed: a cross-site fetch is refused", () => {
+Deno.test("isFetchSiteAllowed: a cross-site fetch is refused", () => {
   assertEquals(
-    isRequestAllowed(crossSiteRequest({ "sec-fetch-mode": "cors" })),
+    isFetchSiteAllowed(crossSiteRequest({ "sec-fetch-mode": "cors" })),
     false,
   );
 });
 
-Deno.test("isRequestAllowed: a cross-site <script src> embed is refused, though it sends no Origin", () => {
+Deno.test("isFetchSiteAllowed: a cross-site <script src> embed is refused, though it sends no Origin", () => {
   assertEquals(
-    isRequestAllowed(crossSiteRequest({
+    isFetchSiteAllowed(crossSiteRequest({
       "sec-fetch-mode": "no-cors",
       "sec-fetch-dest": "script",
     })),
@@ -57,12 +57,12 @@ Deno.test("isRequestAllowed: a cross-site <script src> embed is refused, though 
   );
 });
 
-Deno.test("isRequestAllowed: a cross-site navigation is refused wherever it lands", () => {
+Deno.test("isFetchSiteAllowed: a cross-site navigation is refused wherever it lands", () => {
   for (
     const destination of ["document", "iframe", "frame", "object", "embed"]
   ) {
     assertEquals(
-      isRequestAllowed(crossSiteRequest({
+      isFetchSiteAllowed(crossSiteRequest({
         "sec-fetch-mode": "navigate",
         "sec-fetch-dest": destination,
       })),

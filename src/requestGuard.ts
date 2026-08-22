@@ -85,14 +85,14 @@ const _ALLOWED_FETCH_SITES = [
 //@fns
 
 /**
- Returns true if the request is one a browser page is allowed to make.
+ Returns true if the request's Sec-Fetch-Site is one a local server may answer.
  - every cross-site request is refused, whatever it asked for; a <script src>
     or <img> embed sends no Origin, so the absent CORS header does not stop the
     page reading what it loaded
  - true when no Sec-Fetch-Site arrives, since there is nothing to check -- a
     non-browser client, or an origin browsers don't set it for
 */
-export function isRequestAllowed(request: Request): boolean {
+export function isFetchSiteAllowed(request: Request): boolean {
   return _ALLOWED_FETCH_SITES.includes(request.headers.get("sec-fetch-site"));
 }
 
@@ -141,7 +141,7 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
 
     // Reject what a cross-site page asked for
 
-    if (!isRequestAllowed(request)) return _refuse("cross-site request");
+    if (!isFetchSiteAllowed(request)) return _refuse("cross-site request");
 
     // Reject a mutation sent from a foreign origin
 
