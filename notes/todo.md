@@ -8,16 +8,14 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
 ## Queue
 
-- **rename the `./requestGuard` export subpath** -- published URL, so it has to
-  precede 0.1.0; under Deno conventions
+- **settle the `./requestGuard` export subpath** -- published URL, so whatever
+  it ends up as, it ends up there before 0.1.0; under Deno style
 - **publish 0.1.0 to jsr**, and the two steps that only work afterward -- under
   Release
 - **repoint the sibling-path consumers** -- under Release
-- **the rest of the deno convention pass** -- filenames, its own session
+- **cross-reference the docs with `{@link}`** -- under Deno style
+- **the rest of Deno style** -- filenames, its own session
 - **decide on the README's `--`** -- under Code health
-- @aitodo
-  - use `{@link <ident>}` anywhere?
-  - How common or how heavily recommended actually is the snake case convention in Denno? Their own examples don't use it. But then again, they are using the cases package in their examples and extracting camel cases from it.
 
 _direction_: no roadmap; the whole file is the run-up to a first public release.
 The dividing line is whether a change is visible from outside the package: the
@@ -45,31 +43,35 @@ internals can follow at leisure.
   cross-site navigation allowance in [](../src/requestGuard.ts) is the one left
   after the two above.
 
-## Deno conventions
+## Deno style
 
-Its own session -- the filename half touches every file and every import. Guide:
-<https://docs.deno.com/runtime/contributing/style_guide>. Identifiers already
-conform (camelCase functions and variables, PascalCase types, UPPER_SNAKE_CASE
-top-level constants); what's left is filenames and doc tags.
+The style guide (<https://docs.deno.com/runtime/contributing/style_guide>) opens
+by scoping itself out of this: it covers "internal runtime code in the Deno
+runtime, and in the Deno Standard Library... not meant as a general style guide
+for users of Deno". So nothing below is a conformance gap. What is actually
+enforced -- `deno doc --lint`, `deno publish`'s slow-type check -- already
+passes. The question each item asks is whether serve should read like a std
+package or like the rest of the workspace.
 
-- **the public export subpath is kebab-case, and is not the filename.** std
-  publishes `@std/http/file-server` out of `file_server.ts`. serve's is
-  `./requestGuard` in [](../deno.jsonc), which std would write
-  `./request-guard`. A published URL, so this one is pre-0.1.0 and separable
-  from the rest of the section -- the file it points at can stay put.
-- **filenames are snake_case.** `get_lan_addresses.ts`, `request_guard.ts`. The
-  guide states it as "underscores, not dashes" with `file_server.ts` as the
-  example, and std is snake_case throughout.
-- **a module only its own directory should import is named `_foo.ts`.** That
-  covers [](../src/helpers.ts) and [](../src/getLanAddresses.ts), neither of
-  which deno.jsonc exports. It also settles what to call helpers.ts, which has
-  held one function since getLanAddresses split out of it -- renamed once here
-  rather than twice.
-- **exported params want `@param` tags.** The guide: "All exported function
-  parameters require `@param` tags with descriptions." serve has none, and
-  `ServeOptions` / `RequestGuardOptions` are already documented field by field,
-  so adding them duplicates. A call to make -- `deno doc --lint` passes either
-  way.
+- **the export subpath has to be settled before 0.1.0** whatever it ends up as,
+  because it's a published URL and changing it later is a breaking version. std
+  publishes `@std/http/file-server` out of `file_server.ts`, so a consumer's eye
+  expects `./request-guard` where [](../deno.jsonc) has `./requestGuard`. The
+  file it points at is free either way.
+- **use `{@link}` and `{@linkcode}` for cross-references.** Verified: deno doc
+  turns both into real anchors between symbol pages, `{@linkcode}` in monospace,
+  no unrendered braces. Worth doing wherever a doc names another exported symbol
+  -- `serve` naming `ServeOptions`, `createRequestGuard` naming `RequestGuard`.
+  This one is a plain win rather than a style call.
+- **snake_case filenames** are std's house style. camelCase is the rest of the
+  workspace's. Nothing in serve is wrong today.
+- **`_foo.ts` for a module only its own directory imports** -- same standing. It
+  would cover [](../src/helpers.ts) and [](../src/getLanAddresses.ts), and would
+  settle what to call helpers.ts, which has held one function since
+  getLanAddresses split out of it.
+- **`@param` tags on exported params** -- same standing, and it fights brevity:
+  `ServeOptions` and `RequestGuardOptions` are already documented field by
+  field.
 
 ## Code health
 
