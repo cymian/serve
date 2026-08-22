@@ -14,6 +14,10 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
   Release
 - **repoint the sibling-path consumers** -- under Release
 - **the rest of Code health** -- internal, so any time
+- @aitodo:
+  - should we specify default names after @module tags
+  - deno convention pass -- camel case file anems and functoins and variables?
+    - anything else?
 
 *direction*: no roadmap; the whole file is the run-up to a first public release.
 Anything that changes an exported name goes before the publish -- after it the
