@@ -114,7 +114,16 @@ export function serve(
   return Deno.serve(
     { port, hostname, onListen },
     (request) => {
-      const refusal = guard?.(request);
+      if (!guard) {
+        return new Response("refused: the guard is not built yet\n", {
+          status: 503,
+        });
+      }
+      // - onListen builds it before the first request, so this is unreachable;
+      //   it is here so that a scheduling change breaks the server rather than
+      //   unguarding it
+
+      const refusal = guard(request);
       if (refusal) return refusal;
 
       return serveDir(request, {
@@ -122,8 +131,9 @@ export function serve(
         quiet: true,
         showDirListing: options.isDirListingShown ?? false,
         showDotfiles: false,
-        // - serveDir's own default, pinned because it is one of the defaults
-        //   this package promises
+        enableCors: false,
+        // - both are serveDir's own defaults, pinned because they are two of
+        //   the defaults this package promises
         headers: _NO_CACHE_HEADERS,
       });
     },

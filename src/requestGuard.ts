@@ -136,10 +136,17 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
   return (request) => {
     // Reject a Host this server doesn't answer to
 
-    if (!allowedHosts.has(request.headers.get("host") ?? "")) {
+    const hostHeader = request.headers.get("host");
+
+    if (
+      !allowedHosts.has(_normalizeHost(new URL(request.url).host)) ||
+      (hostHeader !== null && !allowedHosts.has(_normalizeHost(hostHeader)))
+    ) {
       return _refuse("host not addressed to this server");
     }
     // - the DNS rebinding case, which every same-origin check would pass
+    // - the URL is checked as well as the header because an absolute-form
+    //   request target names its own host, and HTTP/2 sends no Host at all
 
     // Reject what a cross-site page asked for
 
@@ -153,9 +160,10 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
     if (isMutation && origin !== null && !allowedOrigins.has(origin)) {
       return _refuse("foreign origin");
     }
-    // - an absent Origin means it wasn't a browser: the fetch spec sets one on
-    //   every request but a same-origin GET or HEAD, leaving curl and scripts,
-    //   which the loopback binding already scopes to this machine
+    // - an absent Origin means it wasn't a browser: the fetch spec appends one
+    //   to every request whose method isn't GET or HEAD, leaving curl and
+    //   scripts, which the loopback binding already scopes to this machine
+    //   - so it holds only while the binding does; --lan gives it away
 
     // Require the client header wherever isPathGuarded asks for it
 
@@ -177,4 +185,13 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
 /** Returns the 403 a failed check earns, naming the check for devtools to read. */
 function _refuse(reason: string): Response {
   return new Response(`refused: ${reason}\n`, { status: 403 });
+}
+
+/**
+ Returns a host in the one form the allowlist holds, e.g. `LocalHost.:80` =>
+ `localhost:80`.
+ - a hostname is case-insensitive, and may carry the root label's trailing dot
+*/
+function _normalizeHost(host: string): string {
+  return host.toLowerCase().replace(/\.(?=:|$)/, "");
 }

@@ -129,6 +129,28 @@ Deno.test("createRequestGuard: refuses the rebinding Host, which every same-orig
   assertEquals(refusal?.status, 403);
 });
 
+Deno.test("createRequestGuard: refuses an absolute-form target naming another host", () => {
+  const refusal = guard(
+    new Request("http://evil.com/index.html", {
+      headers: { host: `127.0.0.1:${_PORT}`, "sec-fetch-site": "same-origin" },
+    }),
+  );
+  // - the Host header is this server's, so only the request target gives it
+  //   away; serveDir redirects a directory to the URL's own host
+
+  assertEquals(refusal?.status, 403);
+});
+
+Deno.test("createRequestGuard: admits a Host whatever its case or trailing dot", () => {
+  for (const host of ["LOCALHOST", "LocalHost", "localhost."]) {
+    assertEquals(
+      guard(ownRequest("/index.html", { host: `${host}:${_PORT}` })),
+      null,
+      host,
+    );
+  }
+});
+
 Deno.test("createRequestGuard: refuses a cross-site request that is addressed correctly", () => {
   assertEquals(
     guard(ownRequest("/index.html", { "sec-fetch-site": "cross-site" }))
