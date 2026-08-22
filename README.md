@@ -10,8 +10,8 @@ A static dev server with secure and convenient defaults:
 - **no cors**: does not send an `Access-Control-Allow-Origin: *` header, so
   other sites open in your browser can't read what it serves
 - **no cross-site requests**: refuses them outright, so those sites get nothing
-  back — which also covers `<script src>` and `<img>` embeds, since they send
-  no `Origin` and so aren't governed by the CORS header
+  back — which also covers `<script src>` and `<img>` embeds, since they send no
+  `Origin` and so aren't governed by the CORS header
 - **no foreign `Host`**: refuses a request addressed to any name but a loopback
   one on the bound port, which is what DNS rebinding relies on — the attacker
   points their own domain at `127.0.0.1`, and every same-origin check then reads
