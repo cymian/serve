@@ -15,6 +15,9 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 - **repoint the sibling-path consumers** -- under Release
 - **the rest of the deno convention pass** -- filenames, its own session
 - **decide on the README's `--`** -- under Code health
+- @aitodo
+  - use `{@link <ident>}` anywhere?
+  - How common or how heavily recommended actually is the snake case convention in Denno? Their own examples don't use it. But then again, they are using the cases package in their examples and extracting camel cases from it.
 
 _direction_: no roadmap; the whole file is the run-up to a first public release.
 The dividing line is whether a change is visible from outside the package: the
