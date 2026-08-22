@@ -122,10 +122,10 @@ export function serve(
         quiet: true,
         showDirListing: options.isDirListingShown ?? false,
         showDotfiles: false,
+        // - serveDir's own default, pinned because it is one of the defaults
+        //   this package promises
         headers: _NO_CACHE_HEADERS,
       });
-      // - showDotfiles is serveDir's own default, pinned because it is one of
-      //   the defaults this package promises
     },
   );
 }
