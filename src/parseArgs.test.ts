@@ -6,7 +6,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 
-import { parseArgs } from "./helpers.ts";
+import { parseArgs } from "./parseArgs.ts";
 
 //
 //@tests

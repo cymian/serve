@@ -17,7 +17,7 @@
 import { serveDir } from "@std/http/file-server";
 
 import getLanAddresses from "./getLanAddresses.ts";
-import { parseArgs } from "./helpers.ts";
+import { parseArgs } from "./parseArgs.ts";
 import { createRequestGuard } from "./requestGuard.ts";
 
 import type { RequestGuard } from "./requestGuard.ts";
