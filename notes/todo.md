@@ -8,21 +8,19 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
 ## Queue
 
-- **name the guard's fetch-site check for what it checks** -- under Code health
-- **drop one of getLanAddresses' two exports** -- under Code health
+- **rename the `./requestGuard` export subpath** -- published URL, so it has to
+  precede 0.1.0; under Deno conventions
 - **publish 0.1.0 to jsr**, and the two steps that only work afterward -- under
   Release
 - **repoint the sibling-path consumers** -- under Release
-- **the rest of Code health** -- internal, so any time
-- @aitodo:
-  - should we specify default names after @module tags
-  - deno convention pass -- camel case file anems and functoins and variables?
-    - anything else?
+- **the rest of the deno convention pass** -- filenames, its own session
+- **decide on the README's `--`** -- under Code health
 
-*direction*: no roadmap; the whole file is the run-up to a first public release.
-Anything that changes an exported name goes before the publish -- after it the
-same change is a breaking version, and the two at the top of the queue are both
-exported surface. Everything else can follow at leisure.
+*direction*: no roadmap; the whole file is the run-up to a first public
+release. The dividing line is whether a change is visible from outside the
+package: the export subpath and anything in the exported API go before the
+publish, because afterward the same change is a breaking version. Filenames,
+comments, and internals can follow at leisure.
 
 ## Release
 
@@ -44,25 +42,34 @@ exported surface. Everything else can follow at leisure.
   cross-site navigation allowance in [](../src/requestGuard.ts) is the one left
   after the two above.
 
+## Deno conventions
+
+Its own session -- the filename half touches every file and every import.
+Guide: <https://docs.deno.com/runtime/contributing/style_guide>. Identifiers
+already conform (camelCase functions and variables, PascalCase types,
+UPPER_SNAKE_CASE top-level constants); what's left is filenames and doc tags.
+
+- **the public export subpath is kebab-case, and is not the filename.** std
+  publishes `@std/http/file-server` out of `file_server.ts`. serve's is
+  `./requestGuard` in [](../deno.jsonc), which std would write
+  `./request-guard`. A published URL, so this one is pre-0.1.0 and separable
+  from the rest of the section -- the file it points at can stay put.
+- **filenames are snake_case.** `get_lan_addresses.ts`, `request_guard.ts`.
+  The guide states it as "underscores, not dashes" with `file_server.ts` as
+  the example, and std is snake_case throughout.
+- **a module only its own directory should import is named `_foo.ts`.** That
+  covers [](../src/helpers.ts) and [](../src/getLanAddresses.ts), neither of
+  which deno.jsonc exports. It also settles what to call helpers.ts, which has
+  held one function since getLanAddresses split out of it -- renamed once here
+  rather than twice.
+- **exported params want `@param` tags.** The guide: "All exported function
+  parameters require `@param` tags with descriptions." serve has none, and
+  `ServeOptions` / `RequestGuardOptions` are already documented field by
+  field, so adding them duplicates. A call to make -- `deno doc --lint` passes
+  either way.
+
 ## Code health
 
-Found in the comment pass of 2026-08-22. Nothing here is urgent, but the first
-two are exported surface and so are cheaper before 0.1.0 than after.
-
-- **`isRequestAllowed` overpromises.** A public export that checks only
-  Sec-Fetch-Site, while `createRequestGuard` runs four checks --
-  `isFetchSiteAllowed` says what it is. [](../src/requestGuard.ts)
-- **`getLanAddresses` is exported twice**, named and default. jsr discourages
-  default exports; pick one. [](../src/getLanAddresses.ts)
-- **`helpers.ts` holds one function** since getLanAddresses split out of it, so
-  the filename no longer describes the contents.
-- **`parseArgs` wants a `switch`.** The else-if chain is what made `deno fmt`
-  strand a process comment on a closing brace, which is why that comment is gone
-  rather than fixed. [](../src/helpers.ts)
-- **the test files head their tests with `//@main`** where `@tests` exists in
-  the code-tree tag list.
-- **`IPV4_PATTERN` isn't `_`-prefixed** in [](../src/getLanAddresses.test.ts),
-  unlike `_PORT` in [](../src/requestGuard.test.ts).
 - **the README uses `--` where PROSE asks for a real em dash** in user-facing
   text, and a jsr package page is about as user-facing as it gets. A call to
   make, not a sweep to run.
