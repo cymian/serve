@@ -6,6 +6,7 @@
 
 import { assertEquals } from "@std/assert";
 
+import getLanAddresses from "./getLanAddresses.ts";
 import { createRequestGuard, isFetchSiteAllowed } from "./requestGuard.ts";
 
 //
@@ -190,4 +191,35 @@ Deno.test("createRequestGuard: requires the header only where isPathGuarded says
 
   assertEquals(streamGuard(ownRequest("/api/events")), null);
   assertEquals(streamGuard(ownRequest("/api/window"))?.status, 403);
+});
+
+//### The lan
+
+// Both loops are empty on a machine with no LAN address, so each test asserts
+// something unconditional first.
+
+Deno.test("createRequestGuard: admits this machine's LAN addresses when the lan is allowed", () => {
+  const lanGuard = createRequestGuard({ port: _PORT, isLanAllowed: true });
+
+  assertEquals(lanGuard(ownRequest("/index.html")), null);
+
+  for (const address of getLanAddresses()) {
+    assertEquals(
+      lanGuard(ownRequest("/index.html", { host: `${address}:${_PORT}` })),
+      null,
+      address,
+    );
+  }
+});
+
+Deno.test("createRequestGuard: refuses those same addresses when it isn't", () => {
+  assertEquals(guard(ownRequest("/index.html")), null);
+
+  for (const address of getLanAddresses()) {
+    assertEquals(
+      guard(ownRequest("/index.html", { host: `${address}:${_PORT}` }))?.status,
+      403,
+      address,
+    );
+  }
 });

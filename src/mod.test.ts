@@ -4,7 +4,7 @@
  a 403 -- what serve() wires together, rather than what the pieces decide.
 */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertStringIncludes } from "@std/assert";
 
 import { serve } from "./mod.ts";
 
@@ -60,5 +60,41 @@ Deno.test("serve: a cross-site request gets a 403 instead of the file", async ()
   await response.text();
 
   assertEquals(response.status, 403);
+  await server.shutdown();
+});
+
+// The repo root is the fixture below: it holds dotfiles, and a src/ with no
+// index.html.
+
+Deno.test("serve: a dotfile is not served, so a stray .env stays unreadable", async () => {
+  const server = serve({ port: 0, root: "." });
+
+  const response = await fetch(
+    `http://127.0.0.1:${server.addr.port}/.gitignore`,
+  );
+  await response.text();
+
+  assertEquals(response.status, 404);
+  await server.shutdown();
+});
+
+Deno.test("serve: a directory with no index.html is not listed", async () => {
+  const server = serve({ port: 0, root: "." });
+
+  const response = await fetch(`http://127.0.0.1:${server.addr.port}/src/`);
+  await response.text();
+
+  assertEquals(response.status, 404);
+  await server.shutdown();
+});
+
+Deno.test("serve: isDirListingShown opts that listing back in", async () => {
+  const server = serve({ port: 0, root: ".", isDirListingShown: true });
+
+  const response = await fetch(`http://127.0.0.1:${server.addr.port}/src/`);
+  const body = await response.text();
+
+  assertEquals(response.status, 200);
+  assertStringIncludes(body, "mod.ts");
   await server.shutdown();
 });

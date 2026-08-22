@@ -32,8 +32,12 @@ Deno.test("parseArgs: the short forms", () => {
   });
 });
 
-Deno.test("parseArgs: an unknown flag is skipped without eating the arg after it", () => {
-  assertEquals(parseArgs(["--nope", "--port", "3080"]), { port: 3080 });
+Deno.test("parseArgs: a misspelled flag throws rather than quietly serving the defaults", () => {
+  assertThrows(() => parseArgs(["--dir-listings"]), Error, "unknown argument");
+});
+
+Deno.test("parseArgs: a bare path throws, since the root is named by -r and not by position", () => {
+  assertThrows(() => parseArgs(["src/"]), Error, "unknown argument");
 });
 
 Deno.test("parseArgs: directory listing is opt-in", () => {
@@ -42,6 +46,12 @@ Deno.test("parseArgs: directory listing is opt-in", () => {
 
 Deno.test("parseArgs: a port that isn't a number throws", () => {
   assertThrows(() => parseArgs(["-p", "abc"]), Error, "port number");
+});
+
+Deno.test("parseArgs: a port outside the 16-bit range throws", () => {
+  for (const value of ["-1", "70000", "3.5", ""]) {
+    assertThrows(() => parseArgs(["-p", value]), Error, "port number");
+  }
 });
 
 Deno.test("parseArgs: a flag missing its value throws", () => {

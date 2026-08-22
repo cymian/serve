@@ -12,11 +12,17 @@
     "@std/assert": "jsr:@std/assert@^1",
     "@std/http": "jsr:@std/http@^1"
   },
+  "fmt": {
+    "exclude": ["notes/"]
+    // - the notes are Ian's prose; the formatter reflows markdown
+  },
   "tasks": {
     // Check
     "check": "deno check src/",
     "lint": "deno lint src/",
-    "test": "deno test -R=src -N=127.0.0.1,0.0.0.0 -S=networkInterfaces src/",
+    "test": "deno test -R=. -N=127.0.0.1,0.0.0.0 -S=networkInterfaces src/",
+    // - the whole repo, not just src/: the dotfile and dir-listing specs serve
+    //   the repo root, which is the only fixture carrying both
     //
     // Publish
     "publish:dry": "deno publish --dry-run",
