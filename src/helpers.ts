@@ -23,23 +23,45 @@ export function parseArgs(args: string[]): ServeOptions {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    // Consume and validate the arg after a flag that takes a value
+    switch (arg) {
+      // Flags taking a value consume the arg after them
 
-    if (arg === "--port" || arg === "-p") {
-      const next: string | undefined = args[++i];
-      if (next === undefined) throw new Error(`${arg} needs a value`);
-      const port = Number(next);
-      if (!Number.isInteger(port)) {
-        throw new Error(`${arg} needs a port number, got "${next}"`);
+      case "--port":
+      case "-p": {
+        const value = _takeValue(arg, args[++i]);
+        const port = Number(value);
+        if (!Number.isInteger(port)) {
+          throw new Error(`${arg} needs a port number, got "${value}"`);
+        }
+        options.port = port;
+        break;
       }
-      options.port = port;
-    } else if (arg === "--root" || arg === "-r") {
-      const next: string | undefined = args[++i];
-      if (next === undefined) throw new Error(`${arg} needs a value`);
-      options.root = next;
-    } else if (arg === "--lan") options.isLanAllowed = true;
-    else if (arg === "--dir-listing") options.isDirListingShown = true;
+      case "--root":
+      case "-r":
+        options.root = _takeValue(arg, args[++i]);
+        break;
+
+      // Bare flags
+
+      case "--lan":
+        options.isLanAllowed = true;
+        break;
+      case "--dir-listing":
+        options.isDirListingShown = true;
+        break;
+    }
   }
 
   return options;
+}
+
+//
+//@helpers
+
+/**
+ Returns the arg a flag consumes, throwing in the flag's name when it's absent.
+*/
+function _takeValue(flag: string, next: string | undefined): string {
+  if (next === undefined) throw new Error(`${flag} needs a value`);
+  return next;
 }
