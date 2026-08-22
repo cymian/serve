@@ -40,10 +40,13 @@ export interface RequestGuardOptions {
   isLanAllowed?: boolean;
   /**
    Header a guarded request must carry, e.g. `"x-worldview"`.
-   - the value is never read; what protects is that a header outside the small
-      set browsers treat as simple can't be sent without a successful
-      preflight, and the shapes that reach a local server uninvited -- a
-      no-cors send, a simple cross-origin POST -- can send neither
+   - name it outside the CORS-safelisted set -- `accept`, `accept-language`,
+      `content-language`, `content-type`, `range` -- which are the names that
+      need no preflight, and so would guard nothing
+   - the value is never read; what protects is that a header outside that set
+      can't be sent without a successful preflight, and the shapes that reach a
+      local server uninvited -- a no-cors send, a simple cross-origin POST --
+      can send neither
   */
   clientHeader?: string;
   /**
@@ -51,6 +54,8 @@ export interface RequestGuardOptions {
    required on.
    - defaults to everything under `/api/`, leaving page loads and assets to
       the checks above; a navigation can set no headers
+   - receives the decoded pathname, so a prefix can't be hidden behind an
+      escape
   */
   isPathGuarded?: (pathname: string) => boolean;
 }
@@ -167,12 +172,15 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
 
     // Require the client header wherever isPathGuarded asks for it
 
-    if (
-      options.clientHeader !== undefined &&
-      isPathGuarded(new URL(request.url).pathname) &&
-      request.headers.get(options.clientHeader) === null
-    ) {
-      return _refuse(`missing ${options.clientHeader}`);
+    if (options.clientHeader !== undefined) {
+      const pathname = _decodePathname(new URL(request.url).pathname);
+
+      if (
+        (pathname === null || isPathGuarded(pathname)) &&
+        request.headers.get(options.clientHeader) === null
+      ) {
+        return _refuse(`missing ${options.clientHeader}`);
+      }
     }
 
     return null;
@@ -194,4 +202,17 @@ function _refuse(reason: string): Response {
 */
 function _normalizeHost(host: string): string {
   return host.toLowerCase().replace(/\.(?=:|$)/, "");
+}
+
+/**
+ Returns the pathname a router will act on, e.g. `/%61pi/keys` => `/api/keys`.
+ - @returns null for a pathname that can't be decoded, which the caller treats
+    as guarded rather than guessing what a router would make of it
+*/
+function _decodePathname(pathname: string): string | null {
+  try {
+    return decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
 }

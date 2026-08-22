@@ -200,6 +200,14 @@ Deno.test("createRequestGuard: admits an api request carrying it, whatever its v
   );
 });
 
+Deno.test("createRequestGuard: guards an escaped path, which a router may still decode", () => {
+  assertEquals(headerGuard(ownRequest("/%61pi/window"))?.status, 403);
+});
+
+Deno.test("createRequestGuard: guards a path it cannot decode, rather than guessing", () => {
+  assertEquals(headerGuard(ownRequest("/%c0%aeapi/window"))?.status, 403);
+});
+
 Deno.test("createRequestGuard: leaves page loads alone, since a navigation sets no headers", () => {
   assertEquals(headerGuard(ownRequest("/index.html")), null);
 });
