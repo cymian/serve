@@ -69,8 +69,8 @@ const _NO_CACHE_HEADERS = [
 
 /**
  Starts a static file server and returns it, already listening.
- - loopback unless `isLanAllowed`, so the default accepts connections from this
-    machine only
+ - loopback unless {@linkcode ServeOptions.isLanAllowed | isLanAllowed}, so the
+    default accepts connections from this machine only
  - @sideEffect binds an address and port, and prints the URLs it's reachable at
 
  @example Drive it from code

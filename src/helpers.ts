@@ -1,5 +1,6 @@
 /**
- The command-line parse behind mod.ts's CLI entry: argv in, ServeOptions out.
+ The command-line parse behind mod.ts's CLI entry: argv in,
+ {@linkcode ServeOptions} out.
 
  Internal to the package -- deno.jsonc's exports name neither this module nor
  a re-export of it, so nothing here is reachable from outside.

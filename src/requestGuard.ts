@@ -47,7 +47,8 @@ export interface RequestGuardOptions {
   */
   clientHeader?: string;
   /**
-   Paths `clientHeader` is required on.
+   Paths {@linkcode RequestGuardOptions.clientHeader | clientHeader} is
+   required on.
    - defaults to everything under `/api/`, leaving page loads and assets to
       the checks above; a navigation can set no headers
   */
@@ -97,7 +98,8 @@ export function isFetchSiteAllowed(request: Request): boolean {
 }
 
 /**
- Builds the guard for a server already listening on `options.port`.
+ Builds the guard for a server already listening on
+ {@linkcode RequestGuardOptions.port | options.port}.
  - the LAN addresses are read once here, so an address the machine gains later
     needs a restart to be addressable
 
