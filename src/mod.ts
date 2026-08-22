@@ -9,14 +9,8 @@
  - no cross-site requests
  - no requests addressed to a name this machine doesn't answer to
 
- @std/http's serveDir does the serving; this module pins how it's configured.
-
- Run it:
-   deno run -R=. -N=127.0.0.1:3080 jsr:@cymian/serve -p 3080 -r src/
-
- Or drive it from code:
-   import { serve } from "jsr:@cymian/serve";
-   const server = serve({ port: 3080, root: "src/" });
+ @std/http's serveDir does the serving; this module pins how it's configured,
+ and doubles as the command line that runs it.
 */
 
 import { serveDir } from "@std/http/file-server";
@@ -32,22 +26,21 @@ import type { RequestGuard } from "./requestGuard.ts";
  - publish to jsr, then point the consumers at jsr:@cymian/serve
    - create-deno's addWebTasks, todo_app, mouse-training, and audio all reach
      it by the sibling path ../serve/src/mod.ts
-   - that also unblocks importing it, per the note below
 */
 
 /*
  @notes
  - serveDir's ETag is size + mtime, so a build that preserves mtime revalidates
    to 304 with changed content -- normal editing moves mtime
- - importing this module from another project needs @std/http in that project's
-   import map and deno.ns in its lib; until it's published to jsr, consumers
-   should run it as a task entrypoint rather than import it
+ - importing this module needs @std/http in the consumer's import map and
+   deno.ns in its lib; until it's on jsr, consumers should run it as a task
+   entrypoint rather than import it
 */
 
 //
 //@types
 
-/** How a served instance is configured. Every field has a default. */
+/** How a server is configured. Every field has a default. */
 export interface ServeOptions {
   /** Port to listen on. */
   port?: number;
@@ -55,7 +48,7 @@ export interface ServeOptions {
   root?: string;
   /** Reachable from the local network rather than this machine only. */
   isLanAllowed?: boolean;
-  /** Directory contents listed when a directory has no index.html. */
+  /** Directory contents listed when a directory has no `index.html`. */
   isDirListingShown?: boolean;
 }
 
@@ -75,9 +68,17 @@ const _NO_CACHE_HEADERS = [
 
 /**
  Starts a static file server and returns it, already listening.
- - @sideEffect binds an address and port, and prints the URLs it's reachable at
- - loopback unless isLanAllowed, so the default accepts connections from this
+ - loopback unless `isLanAllowed`, so the default accepts connections from this
     machine only
+ - @sideEffect binds an address and port, and prints the URLs it's reachable at
+
+ @example Drive it from code
+ ```ts
+ import { serve } from "jsr:@cymian/serve";
+
+ const server = serve({ port: 3080, root: "src/" });
+ await server.shutdown();
+ ```
 */
 export function serve(
   options: ServeOptions = {},
@@ -88,7 +89,7 @@ export function serve(
 
   let guard: RequestGuard | null = null;
 
-  // Build the guard and announce the URLs, once the bound port is known
+  // Build the guard and announce the URLs
 
   const onListen = (addr: Deno.NetAddr) => {
     guard = createRequestGuard({
@@ -111,7 +112,6 @@ export function serve(
     (request) => {
       const refusal = guard?.(request);
       if (refusal) return refusal;
-      // - not readable by client anyway without CORS, but visible in devtools
 
       return serveDir(request, {
         fsRoot: root,

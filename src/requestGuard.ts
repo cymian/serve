@@ -1,19 +1,17 @@
 /**
  @fileoverview
- Decides whether a request reaching a local server is one this machine is
- entitled to make of it -- the page the server itself sent, or a program
- running here. Everything else is refused before a route sees it.
+ The guard a local server runs ahead of its routes: it admits the page that
+ server itself sent and programs running on this machine, and refuses
+ everything else before a route sees it.
 
- Every check below assumes the server is bound to this machine. A server
- reachable from anywhere can't tell its own caller apart from a stranger's,
- and none of this substitutes for authentication if it ever binds past
- loopback.
-
- A static server needs the first two checks; the rest earn their place once a
- route mutates something.
-
- Imports nothing but the address lookup, so a consumer taking the guard alone
- doesn't typecheck the static server or resolve its dependencies.
+ - **the binding it assumes**: every check here takes the server to be bound to
+   this machine. One reachable from anywhere can't tell its own caller from a
+   stranger, and none of this substitutes for authentication past loopback
+ - **which checks apply**: a static server needs the first two; the rest earn
+   their place once a route mutates something
+ - **what it imports**: nothing but the address lookup, so a consumer taking
+   the guard alone doesn't typecheck the static server or resolve its
+   dependencies
 */
 
 /*
@@ -40,7 +38,7 @@ export interface RequestGuardOptions {
   /** Requests may arrive addressed to this machine's LAN addresses too. */
   isLanAllowed?: boolean;
   /**
-   Header a guarded request must carry, e.g. "x-worldview".
+   Header a guarded request must carry, e.g. `"x-worldview"`.
    - the value is never read; what protects is that a header outside the small
       set browsers treat as simple can't be sent without a successful
       preflight, and a no-cors request -- the one shape that reaches a local
@@ -68,9 +66,10 @@ export type RequestGuard = (request: Request) => Response | null;
 /** Names that reach a server without leaving the machine. */
 const _LOOPBACK_HOSTNAMES = ["127.0.0.1", "localhost", "[::1]"];
 
-/** Methods that only read, and so can't be made to do anything by being fired. */
+/** Methods that only read, so a request using one changes nothing by arriving. */
 const _READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
+/** Sec-Fetch-Site values that don't put the request on another site's behalf. */
 const _ALLOWED_FETCH_SITES = [
   "same-origin", // same scheme, host and port
   "same-site", // same scheme and domain, i.e. subdomain and port can differ
@@ -100,6 +99,20 @@ export function isRequestAllowed(request: Request): boolean {
  Builds the guard for a server already listening on `options.port`.
  - the LAN addresses are read once here, so an address the machine gains later
     needs a restart to be addressable
+
+ @example Guard a server of your own
+ ```ts
+ import { createRequestGuard } from "jsr:@cymian/serve/requestGuard";
+
+ const guard = createRequestGuard({ port: 3919, clientHeader: "x-myapp" });
+
+ Deno.serve({ port: 3919, hostname: "127.0.0.1" }, (request) => {
+   const refusal = guard(request);
+   if (refusal) return refusal;
+
+   return new Response("your routes here");
+ });
+ ```
 */
 export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
   const hostnames = [
@@ -118,17 +131,18 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
     ((pathname: string) => pathname.startsWith("/api/"));
 
   return (request) => {
-    // Reject a Host this server doesn't answer to, which is the rebinding case
+    // Reject a Host this server doesn't answer to
 
     if (!allowedHosts.has(request.headers.get("host") ?? "")) {
       return _refuse("host not addressed to this server");
     }
+    // - the DNS rebinding case, which every same-origin check would pass
 
     // Reject what a cross-site page asked for
 
     if (!isRequestAllowed(request)) return _refuse("cross-site request");
 
-    // Beyond here only mutations and guarded paths are left to check
+    // Reject a mutation sent from a foreign origin
 
     const isMutation = !_READ_METHODS.has(request.method);
     const origin = request.headers.get("origin");
@@ -138,6 +152,8 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
     }
     // - an absent Origin is allowed through: curl and scripts send none, and a
     //   browser that omits it has already failed the Host check
+
+    // Require the client header wherever isPathGuarded asks for it
 
     if (
       options.clientHeader !== undefined &&
@@ -154,7 +170,7 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
 //
 //@helpers
 
-/** The refusal itself: a 403 naming the check, which only devtools will read. */
+/** Returns the 403 a failed check earns, naming the check for devtools to read. */
 function _refuse(reason: string): Response {
   return new Response(`refused: ${reason}\n`, { status: 403 });
 }

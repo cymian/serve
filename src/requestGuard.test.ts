@@ -1,8 +1,7 @@
 /**
  @fileoverview
- Covers what the guard admits and what it refuses. Each check here is the only
- thing standing between a page you happened to visit and a local server, so a
- hole in one is silent until it isn't.
+ Covers what the guard admits and what it refuses. Each check is the only thing
+ between a page you happened to visit and a local server.
 */
 
 import { assertEquals } from "@std/assert";

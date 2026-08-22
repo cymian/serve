@@ -1,7 +1,7 @@
 /**
  @fileoverview
- Covers the command-line parse -- the decision a running server won't complain
- about getting wrong.
+ Covers the command-line parse, where a wrong result serves the wrong directory
+ or port without the server complaining.
 */
 
 import { assertEquals, assertThrows } from "@std/assert";

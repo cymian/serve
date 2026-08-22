@@ -1,10 +1,9 @@
 /**
  @fileoverview
- What mod.ts assembles a server out of, that isn't a decision of its own: the
- command-line parse.
+ The command-line parse behind mod.ts's CLI entry: argv in, ServeOptions out.
 
- Internal to the package -- neither entrypoint deno.jsonc names re-exports it,
- so nothing here is reachable from outside.
+ Internal to the package -- deno.jsonc's exports name neither this module nor
+ a re-export of it, so nothing here is reachable from outside.
 */
 
 import type { ServeOptions } from "./mod.ts";
@@ -23,7 +22,7 @@ export function parseArgs(args: string[]): ServeOptions {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    // Flags taking a value consume and validate the arg after them
+    // Consume and validate the arg after a flag that takes a value
 
     if (arg === "--port" || arg === "-p") {
       const next: string | undefined = args[++i];
@@ -37,8 +36,7 @@ export function parseArgs(args: string[]): ServeOptions {
       const next: string | undefined = args[++i];
       if (next === undefined) throw new Error(`${arg} needs a value`);
       options.root = next;
-    } // Bare flags
-    else if (arg === "--lan") options.isLanAllowed = true;
+    } else if (arg === "--lan") options.isLanAllowed = true;
     else if (arg === "--dir-listing") options.isDirListingShown = true;
   }
 
