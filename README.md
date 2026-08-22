@@ -26,6 +26,10 @@ flags to reproduce, and the cross-site refusal isn't on offer at all:
 --host 127.0.0.1 --no-dir-listing --no-dotfiles --no-cors -H 'cache-control: no-cache'
 ```
 
+@aitodo what command are these args in above example for? I think I deleted it
+at some point because I thought maybe it's redundant, but without it, it's not
+clear.
+
 You can use flags like `--lan` and `--dir-listing` to opt back in to certain
 behaviors (see `Flags` section below).
 
