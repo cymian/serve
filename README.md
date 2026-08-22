@@ -10,25 +10,24 @@ A static dev server with secure and convenient defaults:
 - **no cors**: does not send an `Access-Control-Allow-Origin: *` header, so
   other sites open in your browser can't read what it serves
 - **no cross-site requests**: refuses them outright, so those sites get nothing
-  back -- which also covers `<script src>` and `<img>` embeds, since they send
+  back — which also covers `<script src>` and `<img>` embeds, since they send
   no `Origin` and so aren't governed by the CORS header
 - **no foreign `Host`**: refuses a request addressed to any name but a loopback
-  one on the bound port, which is what DNS rebinding relies on -- the attacker
+  one on the bound port, which is what DNS rebinding relies on — the attacker
   points their own domain at `127.0.0.1`, and every same-origin check then reads
   as satisfied
 - **no-cache**: sends `cache-control: no-cache` header, to prevent stale page
   loads
 
-It uses `@std/http`'s `serveDir` to serve files. Most of the above takes five
-flags to reproduce, and the cross-site refusal isn't on offer at all:
+It uses `@std/http`'s `serveDir` to serve files. Reproducing most of the above
+with std's own `file-server` CLI takes five flags, and the cross-site refusal
+isn't on offer at all:
 
 ```sh
---host 127.0.0.1 --no-dir-listing --no-dotfiles --no-cors -H 'cache-control: no-cache'
+deno run -R -N jsr:@std/http/file-server \
+  --host 127.0.0.1 --no-dir-listing --no-dotfiles --no-cors \
+  -H 'cache-control: no-cache'
 ```
-
-@aitodo what command are these args in above example for? I think I deleted it
-at some point because I thought maybe it's redundant, but without it, it's not
-clear.
 
 You can use flags like `--lan` and `--dir-listing` to opt back in to certain
 behaviors (see `Flags` section below).
@@ -53,8 +52,8 @@ await server.shutdown();
 
 ### Guarding your own server
 
-`serve` is for static files. When you have a server of your own -- routes, a
-build step, an API -- take just the guard:
+`serve` is for static files. When you have a server of your own — routes, a
+build step, an API — take just the guard:
 
 ```ts
 import { createRequestGuard } from "jsr:@cymian/serve/guard";
@@ -76,7 +75,7 @@ It checks four things, in order:
 3. a mutation carries no foreign `Origin`
 4. anything under `/api/` carries `clientHeader`
 
-That last one is why the value is never read -- a header outside the small set
+That last one is why the value is never read — a header outside the small set
 browsers treat as simple can't be sent without a successful preflight, and a
 `no-cors` POST, the one shape that reaches a local server uninvited, can't send
 one at all. Your page adds the header to its own `fetch` calls; pass
