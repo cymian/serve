@@ -4,28 +4,32 @@ The only notes file this project keeps: pending work, rewritten in place. No
 someday, shipped, roadmap, or dev log -- the library is small enough that the
 commit messages carry the reasoning and the git history is the record.
 
+The exception is `## Settled` at the bottom, which is reference rather than
+pending work. A ruling against doing something produces no diff, so there is no
+commit for it to live in; it sits here until the project earns a `reference.md`.
+
 Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
 ## Queue
 
-- **settle the `./requestGuard` export subpath** -- published URL, so whatever
-  it ends up as, it ends up there before 0.1.0; under Deno style
-- **publish 0.1.0 to jsr**, and the two steps that only work afterward -- under
-  Release
-- **repoint the sibling-path consumers** -- under Release
-- **cross-reference the docs with `{@link}`** -- under Deno style
-- **the rest of Deno style** -- filenames, its own session
-- **decide on the README's `--`** -- under Code health
+- **publish 0.1.0 to jsr** -- under Release. Everything that would be a breaking
+  version afterward is now settled
+- **repoint the sibling-path consumers** -- under Release, and only possible
+  once the publish lands
+- **the pre-commit hook doesn't re-stage what it formats** -- under Tooling
 
-_direction_: no roadmap; the whole file is the run-up to a first public release.
-The dividing line is whether a change is visible from outside the package: the
-export subpath and anything in the exported API go before the publish, because
-afterward the same change is a breaking version. Filenames, comments, and
-internals can follow at leisure.
+_direction_: no roadmap; the whole file is the run-up to a first public release,
+and the run-up is finished. The export subpath, the exported API, the README,
+and the LICENSE are all as they should ship, so nothing left on the list has to
+happen in any particular order relative to the publish. Do the publish, then the
+two steps it unblocks.
 
 ## Release
 
-- **publish 0.1.0 to jsr.** `deno task publish:dry` is clean.
+- **publish 0.1.0 to jsr.** `deno task publish:dry` is clean -- eight files, no
+  tests, no repo tooling.
+  - the `@cymian` scope has to exist on jsr.io first, and `deno publish`
+    device-auths through a browser, so this one is Ian's to run
   - **then set Readme Source to "Readme"** in the package's Settings tab. jsr
     shows the `.` entrypoint's module doc on the Overview tab _instead of_ the
     README unless you do, and [](../src/mod.ts)'s module doc is a fraction of
@@ -43,38 +47,46 @@ internals can follow at leisure.
   cross-site navigation allowance in [](../src/requestGuard.ts) is the one left
   after the two above.
 
-## Deno style
+## Tooling
 
-The style guide (<https://docs.deno.com/runtime/contributing/style_guide>) opens
-by scoping itself out of this: it covers "internal runtime code in the Deno
-runtime, and in the Deno Standard Library... not meant as a general style guide
-for users of Deno". So nothing below is a conformance gap. What is actually
-enforced -- `deno doc --lint`, `deno publish`'s slow-type check -- already
-passes. The question each item asks is whether serve should read like a std
-package or like the rest of the workspace.
+- **the pre-commit hook formats without re-staging.** [](../.hooks/pre-commit)
+  runs `deno task pre-commit`, which opens with a rewriting `deno fmt` over the
+  whole repo and never `git add`s the result. Anything the formatter touches
+  falls out of the commit that caused it and is left dirty in the tree.
+  - its reach includes `notes/`, so it reflows this file on every commit
+  - the hook is create-deno's template verbatim, so the fix belongs there and
+    lands in every project scaffolded from it. Not filed in create-deno's notes,
+    which hold only Ian's `inbox.md`
 
-- **the export subpath has to be settled before 0.1.0** whatever it ends up as,
-  because it's a published URL and changing it later is a breaking version. std
-  publishes `@std/http/file-server` out of `file_server.ts`, so a consumer's eye
-  expects `./request-guard` where [](../deno.jsonc) has `./requestGuard`. The
-  file it points at is free either way.
-- **use `{@link}` and `{@linkcode}` for cross-references.** Verified: deno doc
-  turns both into real anchors between symbol pages, `{@linkcode}` in monospace,
-  no unrendered braces. Worth doing wherever a doc names another exported symbol
-  -- `serve` naming `ServeOptions`, `createRequestGuard` naming `RequestGuard`.
-  This one is a plain win rather than a style call.
-- **snake_case filenames** are std's house style. camelCase is the rest of the
-  workspace's. Nothing in serve is wrong today.
-- **`_foo.ts` for a module only its own directory imports** -- same standing. It
-  would cover [](../src/helpers.ts) and [](../src/getLanAddresses.ts), and would
-  settle what to call helpers.ts, which has held one function since
-  getLanAddresses split out of it.
-- **`@param` tags on exported params** -- same standing, and it fights brevity:
-  `ServeOptions` and `RequestGuardOptions` are already documented field by
-  field.
+## Settled
 
-## Code health
+Rulings with no diff to carry them, so the commit history can't be the record.
+The Deno style guide (<https://docs.deno.com/runtime/contributing/style_guide>)
+scopes itself out of this repo -- it covers "internal runtime code in the Deno
+runtime, and in the Deno Standard Library" -- so each of these asked whether
+serve should read like a std package anyway.
 
-- **the README uses `--` where PROSE asks for a real em dash** in user-facing
-  text, and a jsr package page is about as user-facing as it gets. A call to
-  make, not a sweep to run.
+- **the export subpath is `./guard`** (2026-08-22). serve and guard are the two
+  things the package does and both are verbs, so the pair reads as one
+  vocabulary; a camelCase URL segment also has a casing a consumer can get wrong
+  with nothing in the error to say why. `./request-guard` was the alternative.
+  The file behind it stays `requestGuard.ts` -- a subpath and its module are
+  independent, the way `@std/http/file-server` ships out of `file_server.ts`.
+- **no snake_case filenames** (2026-08-22). std's house style, but the workspace
+  is camelCase and a consumer never sees a filename -- jsr shows the subpath.
+  Spot check behind it: scry 3 snake of 120, mouse-training 0 of 154, luxe 1
+  of 52.
+- **no `_foo.ts` prefix** for a module only its own directory imports
+  (2026-08-22). It restates what `exports` in [](../deno.jsonc) already says,
+  and less reliably. The real content of that item was the name `helpers.ts`,
+  now `parseArgs.ts`.
+- **no `@param` tags** (2026-08-22). Both exported functions take one options
+  object whose type documents every field, so the tag would render as "options:
+  the options".
+- **one default export per single-function module** (2026-08-22).
+  `getLanAddresses.ts` and `parseArgs.ts` had two shapes for the same job. Both
+  are internal, so the workspace convention decided it.
+- **`deno.lock` stays in the published tarball** (2026-08-22). Raised as noise
+  and it is, but it is inert either way -- a consumer never resolves through a
+  published package's lockfile -- so there is nothing to weigh against leaving
+  it.
