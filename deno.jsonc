@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "exports": {
     ".": "./src/mod.ts",
-    "./requestGuard": "./src/requestGuard.ts"
+    "./guard": "./src/requestGuard.ts"
     // - its own entry so an app server can take the guard without pulling in
     //   @std/http, which only the static server needs
   },

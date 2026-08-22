@@ -105,7 +105,7 @@ export function isFetchSiteAllowed(request: Request): boolean {
 
  @example Guard a server of your own
  ```ts
- import { createRequestGuard } from "jsr:@cymian/serve/requestGuard";
+ import { createRequestGuard } from "jsr:@cymian/serve/guard";
 
  const guard = createRequestGuard({ port: 3919, clientHeader: "x-myapp" });
 

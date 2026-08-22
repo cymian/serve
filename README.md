@@ -57,7 +57,7 @@ await server.shutdown();
 build step, an API -- take just the guard:
 
 ```ts
-import { createRequestGuard } from "jsr:@cymian/serve/requestGuard";
+import { createRequestGuard } from "jsr:@cymian/serve/guard";
 
 const guard = createRequestGuard({ port: 3919, clientHeader: "x-myapp" });
 
