@@ -1,7 +1,8 @@
 /**
- @fileoverview
  The network-interface lookup the guard and the static server share. Its own
  module so that taking either entrypoint doesn't drag the other in.
+
+ @module
 */
 
 //

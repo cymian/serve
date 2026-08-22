@@ -1,5 +1,4 @@
 /**
- @fileoverview
  A static dev server with the defaults a dev server should have:
  - loopback-only
  - no-cache
@@ -9,8 +8,10 @@
  - no cross-site requests
  - no requests addressed to a name this machine doesn't answer to
 
- @std/http's serveDir does the serving; this module pins how it's configured,
- and doubles as the command line that runs it.
+ The serving itself is @std/http's serveDir; this module pins how it's
+ configured, and doubles as the command line that runs it.
+
+ @module
 */
 
 import { serveDir } from "@std/http/file-server";

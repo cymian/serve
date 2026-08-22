@@ -1,5 +1,4 @@
 /**
- @fileoverview
  The guard a local server runs ahead of its routes: it admits the page that
  server itself sent and programs running on this machine, and refuses
  everything else before a route sees it.
@@ -12,6 +11,8 @@
  - **what it imports**: nothing but the address lookup, so a consumer taking
    the guard alone doesn't typecheck the static server or resolve its
    dependencies
+
+ @module requestGuard
 */
 
 /*
