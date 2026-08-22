@@ -40,4 +40,26 @@ two steps it unblocks.
     same time -- it only holds while the package is unpublished
 - **file the remaining source `@todos` as issues once the repo is public.** The
   cross-site navigation allowance in [](../src/requestGuard.ts) is the one left
-  after the two above.
+  after the two above, and so is everything under The guard's edges.
+
+## The guard's edges
+
+Turned up by the pre-release audit. Each is a request the guard refuses that
+arguably shouldn't be, or a shape it doesn't cover. None blocks 0.1.0 -- a dev
+server on a loopback port meets none of them -- and each is a candidate issue
+once the repo is public.
+
+- **A default port drops out of `Host`.** Browsers omit `:80` and `:443`, and
+  [](../src/requestGuard.ts)'s allowlist is `name:port` throughout, so a server
+  on either port would refuse every browser request. The fix is admitting a
+  bare `Host` when the port is the scheme's default.
+- **`--lan` admits addresses, not names.** A phone reaching the machine as
+  `ians-mbp.local:3000` is refused; only the printed IP URLs work. Either admit
+  `.local` names or say in the README that they won't.
+- **The guard assumes `http://`.** `allowedOrigins` is built with the scheme
+  hardcoded, so a consumer terminating TLS locally has its own mutations
+  refused.
+- **Test helpers don't take the `_` the source gives non-exported entities.**
+  `_PORT` and `_IPV4_PATTERN` carry it; `ownRequest`, `crossSiteRequest`, and
+  the guard consts beside them don't. Either rule works -- one is that a test
+  module exports nothing, so the marker distinguishes nothing -- but pick one.
