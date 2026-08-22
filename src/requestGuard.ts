@@ -12,8 +12,10 @@
    the guard alone doesn't typecheck the static server or resolve its
    dependencies
 
- @module requestGuard
+ @module
 */
+
+import getLanAddresses from "./getLanAddresses.ts";
 
 /*
  @todos
@@ -22,8 +24,6 @@
    - require Sec-Fetch-Dest: document, which is the tab itself; an iframe,
      frame, object, or embed each name themselves instead
 */
-
-import getLanAddresses from "./getLanAddresses.ts";
 
 //
 //@types
@@ -42,8 +42,8 @@ export interface RequestGuardOptions {
    Header a guarded request must carry, e.g. `"x-worldview"`.
    - the value is never read; what protects is that a header outside the small
       set browsers treat as simple can't be sent without a successful
-      preflight, and a no-cors request -- the one shape that reaches a local
-      server uninvited -- can't send one at all
+      preflight, and the shapes that reach a local server uninvited -- a
+      no-cors send, a simple cross-origin POST -- can send neither
   */
   clientHeader?: string;
   /**
@@ -73,7 +73,7 @@ const _READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 /** Sec-Fetch-Site values that don't put the request on another site's behalf. */
 const _ALLOWED_FETCH_SITES = [
-  "same-origin", // same scheme, host and port
+  "same-origin", // same scheme, host, and port
   "same-site", // same scheme and domain, i.e. subdomain and port can differ
   "none", // a user-initiated load: a typed URL, a bookmark
   null, // header absent: not a browser, or not an origin it's sent to
@@ -153,8 +153,9 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
     if (isMutation && origin !== null && !allowedOrigins.has(origin)) {
       return _refuse("foreign origin");
     }
-    // - an absent Origin is allowed through: curl and scripts send none, and a
-    //   browser that omits it has already failed the Host check
+    // - an absent Origin means it wasn't a browser: the fetch spec sets one on
+    //   every request but a same-origin GET or HEAD, leaving curl and scripts,
+    //   which the loopback binding already scopes to this machine
 
     // Require the client header wherever isPathGuarded asks for it
 
