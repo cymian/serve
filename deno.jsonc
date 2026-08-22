@@ -31,8 +31,11 @@
       ".hooks/",
       "notes/",
       ".gitattributes",
-      "$config"
+      "$config",
+      "deno.lock"
     ]
     // - repo tooling, not part of what a consumer downloads
+    // - the lock is inert once published: a consumer resolves through the jsr
+    //   manifest and records it in their own
   }
 }
