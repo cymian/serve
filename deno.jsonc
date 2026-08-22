@@ -26,6 +26,13 @@
     "setup": "git config core.hooksPath .hooks"
   },
   "publish": {
-    "exclude": ["**/*.test.ts", ".hooks/", "notes/"]
+    "exclude": [
+      "**/*.test.ts",
+      ".hooks/",
+      "notes/",
+      ".gitattributes",
+      "$config"
+    ]
+    // - repo tooling, not part of what a consumer downloads
   }
 }
