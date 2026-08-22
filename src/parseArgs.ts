@@ -18,7 +18,7 @@ import type { ServeOptions } from "./mod.ts";
  - unknown flags are ignored; a flag missing its value, or a port that isn't a
     number, throws
 */
-export function parseArgs(args: string[]): ServeOptions {
+function parseArgs(args: string[]): ServeOptions {
   const options: ServeOptions = {};
 
   for (let i = 0; i < args.length; i++) {
@@ -66,3 +66,8 @@ function _takeValue(flag: string, next: string | undefined): string {
   if (next === undefined) throw new Error(`${flag} needs a value`);
   return next;
 }
+
+//
+//@export
+
+export default parseArgs;
