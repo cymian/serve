@@ -13,7 +13,7 @@
  - empty rather than throwing when the networkInterfaces permission is absent,
     so a caller that only wants a URL to print doesn't need the permission
 */
-export function getLanAddresses(): string[] {
+function getLanAddresses(): string[] {
   try {
     return Deno.networkInterfaces()
       .filter((iface) =>

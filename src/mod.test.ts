@@ -9,7 +9,7 @@ import { assertEquals } from "@std/assert";
 import { serve } from "./mod.ts";
 
 //
-//@main
+//@tests
 
 //## serve
 

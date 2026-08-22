@@ -9,10 +9,10 @@ import { assertEquals, assertMatch } from "@std/assert";
 import getLanAddresses from "./getLanAddresses.ts";
 
 //
-//@main
+//@tests
 
 /** IPv4 in dotted-quad form, which is the only shape getLanAddresses keeps. */
-const IPV4_PATTERN = /^\d{1,3}(\.\d{1,3}){3}$/;
+const _IPV4_PATTERN = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 Deno.test({
   name:
@@ -20,7 +20,7 @@ Deno.test({
   permissions: { sys: ["networkInterfaces"] },
   fn: () => {
     for (const address of getLanAddresses()) {
-      assertMatch(address, IPV4_PATTERN);
+      assertMatch(address, _IPV4_PATTERN);
       assertEquals(address.startsWith("127."), false, address);
     }
   },

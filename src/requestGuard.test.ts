@@ -9,15 +9,16 @@ import { assertEquals } from "@std/assert";
 import { createRequestGuard, isFetchSiteAllowed } from "./requestGuard.ts";
 
 //
-//@main
+//@tests
 
 //## isFetchSiteAllowed
 
 /** A request as a page on another site would have the browser send it. */
-const crossSiteRequest = (headers: Record<string, string>) =>
-  new Request("http://127.0.0.1/index.html", {
+function crossSiteRequest(headers: Record<string, string>): Request {
+  return new Request("http://127.0.0.1/index.html", {
     headers: { "sec-fetch-site": "cross-site", ...headers },
   });
+}
 
 Deno.test("isFetchSiteAllowed: a client that sends no Sec-Fetch-Site is allowed", () => {
   assertEquals(

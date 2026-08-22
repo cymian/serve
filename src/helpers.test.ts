@@ -9,7 +9,7 @@ import { assertEquals, assertThrows } from "@std/assert";
 import { parseArgs } from "./helpers.ts";
 
 //
-//@main
+//@tests
 
 //## parseArgs
 
