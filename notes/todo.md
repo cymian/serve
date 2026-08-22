@@ -108,5 +108,13 @@ once the repo is public.
   entry, so 0.1.0 fixes it in the semver contract. Worth confirming that is
   intended rather than incidental -- the alternative is narrowing the subpath to
   `createRequestGuard` and the two types.
+- **[](../src/getLanAddresses.ts) keeps every non-loopback IPv4 interface.** A
+  machine running Docker, a VM, or a VPN gets those addresses printed as
+  `Network:` URLs and admitted into the guard's `Host` allowlist, and a failed
+  DHCP lease puts a link-local `169.254.x.x` there too. Admitting them is
+  harmless -- they are still this machine -- but printing them is noise, and the
+  first URL listed may be the one that doesn't work.
+  - the same `catch` also swallows every error, not just the permission one, so
+    the "grant -S=networkInterfaces" hint would misread any other failure
 - **No `--version`.** Low value while `deno run jsr:@cymian/serve@0.1.0` pins it
   at the call site, but it is what a published CLI is expected to answer.
