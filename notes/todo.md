@@ -8,8 +8,11 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
 ## Queue
 
-- **publish 0.1.0 to jsr** -- under Release. Everything that would be a breaking
-  version afterward is now settled
+- **rule on `same-site` and on symlink containment** -- under Decide before the
+  version number is fixed. Both are breaking to change after 0.1.0 ships
+  - *risk of deferring:* low to publish, high to change later -- a consumer
+    pinning 0.1.x gets the looser behavior forever
+- **publish 0.1.0 to jsr** -- under Release
 - **repoint the sibling-path consumers** -- under Release, and only possible
   once the publish lands
 
@@ -42,6 +45,35 @@ two steps it unblocks.
   cross-site navigation allowance in [](../src/requestGuard.ts) is the one left
   after the two above, and so is everything under The guard's edges.
 
+## Decide before the version number is fixed
+
+Both change what the package promises, so they are cheap now and breaking after
+0.1.0 is out. The README describes the current behavior accurately either way,
+so neither blocks a publish -- they block calling the behavior settled.
+
+- **Does `same-site` stay in the allowlist?** [](../src/requestGuard.ts)'s
+  `_ALLOWED_FETCH_SITES` admits it, and for an IP host same-site means the same
+  host on *any port*. So a page from any other dev server on `127.0.0.1` is
+  admitted (verified: 200). It can't read the response -- no CORS header -- so
+  what it gains is embedding and existence/timing oracles.
+  - dropping it makes the guard same-origin-only, which is what its own doc
+    claims ("the page that server itself sent")
+  - the cost is the cross-port dev setup: a page on `:5173` calling an API on
+    `:3000` is same-site, and a guard consumer sending its own CORS headers
+    would break. The static server itself loses nothing, since a cross-origin
+    read of it already fails
+- **Does the served root get symlink containment?** The dotfile rule matches on
+  the URL and `Deno.stat` follows links, so a link named `plain.txt` serves the
+  `.env` it points at, or any file outside the root. Verified: four such reads
+  returned 200 under `-R` scoped to the served root, since Deno checks the
+  permission against the path as written.
+  - containment means resolving with `Deno.realPath` and requiring the result
+    under `fsRoot`, which duplicates std's path handling -- the fragile part
+  - against it: `deno vendor`, pnpm's store, and monorepo package links all put
+    intentional symlinks in a served tree
+  - the README now says the root's links are part of what you publish, which is
+    honest but is not the "secure defaults" thesis
+
 ## The guard's edges
 
 Turned up by the pre-release audit. Each is a request the guard refuses that
@@ -49,6 +81,17 @@ arguably shouldn't be, or a shape it doesn't cover. None blocks 0.1.0 -- a dev
 server on a loopback port meets none of them -- and each is a candidate issue
 once the repo is public.
 
+- **`Sec-Fetch-Site` is what the cross-site check reads, and not everything
+  sends it.** Chrome 76+, Firefox 90+, and Safari 16.4+ do; earlier Safari
+  (every iOS before 16.4) sends nothing, and an absent header is admitted by
+  design. Browser extensions with host permissions are also not subject to
+  CORS. Worth a README sentence naming the floor.
+- **A WebSocket upgrade passes the guard.** The handshake is a GET, so the
+  mutation check skips it, and WS is exempt from CORS -- a cross-site page that
+  gets past check 2 has a bidirectional channel. `clientHeader` can never cover
+  a WS route either, since the browser WebSocket API cannot set headers. Only
+  reaches guard consumers; the static server has no WS route. An HMR server is
+  the likeliest consumer, so this one matters.
 - **A default port drops out of `Host`.** Browsers omit `:80` and `:443`, and
   [](../src/requestGuard.ts)'s allowlist is `name:port` throughout, so a server
   on either port would refuse every browser request. The fix is admitting a
