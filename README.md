@@ -16,12 +16,12 @@ A static dev server with secure and convenient defaults:
   one on the bound port, which is what DNS rebinding relies on — the attacker
   points their own domain at `127.0.0.1`, and every same-origin check then reads
   as satisfied
-- **no-cache**: sends `cache-control: no-cache` header, to prevent stale page
+- **no-cache**: sends a `cache-control: no-cache` header, to prevent stale page
   loads
 
 It uses `@std/http`'s `serveDir` to serve files. Reproducing most of the above
-with std's own `file-server` CLI takes five flags, and the cross-site refusal
-isn't on offer at all:
+with std's own `file-server` CLI takes five flags, and neither the cross-site
+nor the foreign-`Host` refusal is on offer at all:
 
 ```sh
 deno run -R -N jsr:@std/http/file-server \
@@ -30,7 +30,7 @@ deno run -R -N jsr:@std/http/file-server \
 ```
 
 You can use flags like `--lan` and `--dir-listing` to opt back in to certain
-behaviors (see `Flags` section below).
+behaviors (see [Flags](#flags) below).
 
 ## Use
 
@@ -75,11 +75,11 @@ It checks four things, in order:
 3. a mutation carries no foreign `Origin`
 4. anything under `/api/` carries `clientHeader`
 
-That last one is why the value is never read — a header outside the small set
-browsers treat as simple can't be sent without a successful preflight, and a
-`no-cors` POST, the one shape that reaches a local server uninvited, can't send
-one at all. Your page adds the header to its own `fetch` calls; pass
-`isPathGuarded` if the paths needing it aren't `/api/`.
+The value is never read, and doesn't need to be: a header outside the small set
+browsers treat as simple can't be sent without a successful preflight, and the
+shapes that reach a local server uninvited — a `no-cors` send, a simple
+cross-origin POST — can send neither. Your page adds the header to its own
+`fetch` calls; pass `isPathGuarded` if the paths needing it aren't `/api/`.
 
 This entry point pulls in no dependencies. Importing `@cymian/serve` itself
 brings `@std/http` along, which only the static server needs.
@@ -87,19 +87,27 @@ brings `@std/http` along, which only the static server needs.
 ### Permissions
 
 It needs `-R` (`--allow-read`) to read the content it serves, and `-N`
-(`--allow-network`) to serve it. Scope both to limit exposure, e.g.
+(`--allow-net`) to serve it. Scope both to limit exposure, e.g.
 `-R=src -N=127.0.0.1:3000 -r src/` grants only the served directory and the one
 port.
 
-`--lan` also prints the machine's LAN URL, which reads
-`Deno.networkInterfaces()`. This requires `-S` (`--allow-sys`) and is best
-scoped to `-S=networkInterfaces`. Without it, the server still binds and serves,
-you just lose the `Network:` line; in a terminal, Deno prompts for the
-permission first.
+`--lan` reads `Deno.networkInterfaces()` for the machine's LAN addresses, so it
+needs `-S` (`--allow-sys`), best scoped to `-S=networkInterfaces`. Those
+addresses are both what the `Network:` line prints and what the guard admits a
+`Host` from, so without the permission the server binds to `0.0.0.0` and then
+refuses everything arriving at a LAN address. In a terminal, Deno prompts for
+it.
 
 ## Flags
 
 - `-p`, `--port` — default 8000
 - `-r`, `--root` — the directory served, default `.`
-- `--lan` — bind to 0.0.0.0, and print the LAN URL
+- `--lan` — bind to `0.0.0.0`, print the LAN URL, and admit a `Host` naming one
+  of this machine's LAN addresses
+  - browsers send `Sec-Fetch-*` only to a trustworthy URL, so a request to a LAN
+    address over plain http arrives without them, and the cross-site check has
+    nothing to read
 - `--dir-listing` — serve listings for directories that have no `index.html`
+- `-h`, `--help` — print the flags and exit
+
+Anything else is an error, so a typo can't quietly serve the wrong thing.
