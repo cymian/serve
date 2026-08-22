@@ -27,7 +27,12 @@
     // - one-time per clone: .git/config is not trackable, so nothing carries
     //   the setting with the repo
   },
+  "fmt": {
+    "exclude": ["notes/"]
+    // - deno fmt rewrites *emphasis* to _emphasis_, and `*direction*:` is a
+    //   marker the todo file's structure depends on
+  },
   "publish": {
-    "exclude": ["**/*.test.ts", ".hooks/"]
+    "exclude": ["**/*.test.ts", ".hooks/", "notes/"]
   }
 }
