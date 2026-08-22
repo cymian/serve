@@ -16,17 +16,17 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 - **the rest of the deno convention pass** -- filenames, its own session
 - **decide on the README's `--`** -- under Code health
 
-*direction*: no roadmap; the whole file is the run-up to a first public
-release. The dividing line is whether a change is visible from outside the
-package: the export subpath and anything in the exported API go before the
-publish, because afterward the same change is a breaking version. Filenames,
-comments, and internals can follow at leisure.
+_direction_: no roadmap; the whole file is the run-up to a first public release.
+The dividing line is whether a change is visible from outside the package: the
+export subpath and anything in the exported API go before the publish, because
+afterward the same change is a breaking version. Filenames, comments, and
+internals can follow at leisure.
 
 ## Release
 
 - **publish 0.1.0 to jsr.** `deno task publish:dry` is clean.
   - **then set Readme Source to "Readme"** in the package's Settings tab. jsr
-    shows the `.` entrypoint's module doc on the Overview tab *instead of* the
+    shows the `.` entrypoint's module doc on the Overview tab _instead of_ the
     README unless you do, and [](../src/mod.ts)'s module doc is a fraction of
     what [](../README.md) says
   - **then start `CHANGELOG.md`** -- the one notes-grade file a published
@@ -44,19 +44,19 @@ comments, and internals can follow at leisure.
 
 ## Deno conventions
 
-Its own session -- the filename half touches every file and every import.
-Guide: <https://docs.deno.com/runtime/contributing/style_guide>. Identifiers
-already conform (camelCase functions and variables, PascalCase types,
-UPPER_SNAKE_CASE top-level constants); what's left is filenames and doc tags.
+Its own session -- the filename half touches every file and every import. Guide:
+<https://docs.deno.com/runtime/contributing/style_guide>. Identifiers already
+conform (camelCase functions and variables, PascalCase types, UPPER_SNAKE_CASE
+top-level constants); what's left is filenames and doc tags.
 
 - **the public export subpath is kebab-case, and is not the filename.** std
   publishes `@std/http/file-server` out of `file_server.ts`. serve's is
   `./requestGuard` in [](../deno.jsonc), which std would write
   `./request-guard`. A published URL, so this one is pre-0.1.0 and separable
   from the rest of the section -- the file it points at can stay put.
-- **filenames are snake_case.** `get_lan_addresses.ts`, `request_guard.ts`.
-  The guide states it as "underscores, not dashes" with `file_server.ts` as
-  the example, and std is snake_case throughout.
+- **filenames are snake_case.** `get_lan_addresses.ts`, `request_guard.ts`. The
+  guide states it as "underscores, not dashes" with `file_server.ts` as the
+  example, and std is snake_case throughout.
 - **a module only its own directory should import is named `_foo.ts`.** That
   covers [](../src/helpers.ts) and [](../src/getLanAddresses.ts), neither of
   which deno.jsonc exports. It also settles what to call helpers.ts, which has
@@ -64,9 +64,9 @@ UPPER_SNAKE_CASE top-level constants); what's left is filenames and doc tags.
   rather than twice.
 - **exported params want `@param` tags.** The guide: "All exported function
   parameters require `@param` tags with descriptions." serve has none, and
-  `ServeOptions` / `RequestGuardOptions` are already documented field by
-  field, so adding them duplicates. A call to make -- `deno doc --lint` passes
-  either way.
+  `ServeOptions` / `RequestGuardOptions` are already documented field by field,
+  so adding them duplicates. A call to make -- `deno doc --lint` passes either
+  way.
 
 ## Code health
 
