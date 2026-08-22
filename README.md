@@ -13,8 +13,9 @@ A static dev server with secure and convenient defaults:
 - **no cross-site requests**: refuses them outright, so those sites get nothing
   back — which also covers `<script src>` and `<img>` embeds, since they send no
   `Origin` and so aren't governed by the CORS header
-  - "site" is the browser's sense of it, which ignores the port: a page from
-    another dev server on `127.0.0.1` is same-site, and is admitted
+  - same-site is refused too: the browser's sense of "site" ignores the port, so
+    admitting it would admit every other dev server on `127.0.0.1`. Only the
+    page this server sent, and a URL you typed or bookmarked, get through
 - **no foreign `Host`**: refuses a request addressed to any name but a loopback
   one on the bound port, which is what DNS rebinding relies on — the attacker
   points their own domain at `127.0.0.1`, and every same-origin check then reads

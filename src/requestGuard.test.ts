@@ -29,7 +29,7 @@ Deno.test("isFetchSiteAllowed: a client that sends no Sec-Fetch-Site is allowed"
 });
 
 Deno.test("isFetchSiteAllowed: the page's own subresources are allowed", () => {
-  for (const site of ["same-origin", "same-site", "none"]) {
+  for (const site of ["same-origin", "none"]) {
     assertEquals(
       isFetchSiteAllowed(
         new Request("http://127.0.0.1/index.html", {
@@ -40,6 +40,18 @@ Deno.test("isFetchSiteAllowed: the page's own subresources are allowed", () => {
       site,
     );
   }
+});
+
+Deno.test("isFetchSiteAllowed: a same-site fetch is refused, since a site ignores the port", () => {
+  assertEquals(
+    isFetchSiteAllowed(
+      new Request("http://127.0.0.1/index.html", {
+        headers: { "sec-fetch-site": "same-site" },
+      }),
+    ),
+    false,
+  );
+  // - the other dev server on this machine, which is not the page we served
 });
 
 Deno.test("isFetchSiteAllowed: a cross-site fetch is refused", () => {
@@ -151,12 +163,14 @@ Deno.test("createRequestGuard: admits a Host whatever its case or trailing dot",
   }
 });
 
-Deno.test("createRequestGuard: refuses a cross-site request that is addressed correctly", () => {
-  assertEquals(
-    guard(ownRequest("/index.html", { "sec-fetch-site": "cross-site" }))
-      ?.status,
-    403,
-  );
+Deno.test("createRequestGuard: refuses a foreign-origin request that is addressed correctly", () => {
+  for (const site of ["cross-site", "same-site"]) {
+    assertEquals(
+      guard(ownRequest("/index.html", { "sec-fetch-site": site }))?.status,
+      403,
+      site,
+    );
+  }
 });
 
 Deno.test("createRequestGuard: refuses a mutation carrying a foreign Origin", () => {

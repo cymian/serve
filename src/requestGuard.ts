@@ -19,8 +19,9 @@ import getLanAddresses from "./getLanAddresses.ts";
 
 /*
  @todos
- - allow a cross-site top-level navigation again if something needs one, e.g.
-   an OAuth callback redirected back to localhost
+ - allow a top-level navigation from elsewhere again if something needs one,
+   e.g. an OAuth callback redirected back to localhost, or a link from another
+   dev server on this machine -- the same-site case, refused since 0.1.0
    - require Sec-Fetch-Dest: document, which is the tab itself; an iframe,
      frame, object, or embed each name themselves instead
 */
@@ -76,14 +77,15 @@ const _LOOPBACK_HOSTNAMES = ["127.0.0.1", "localhost", "[::1]"];
 /** Methods that only read, so a request using one changes nothing by arriving. */
 const _READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
-/** Sec-Fetch-Site values that don't put the request on another site's behalf. */
+/** Sec-Fetch-Site values that don't put the request on another origin's behalf. */
 const _ALLOWED_FETCH_SITES = [
   "same-origin", // same scheme, host, and port
-  "same-site", // same scheme and domain, i.e. subdomain and port can differ
   "none", // a user-initiated load: a typed URL, a bookmark
   null, // header absent: not a browser, or not an origin it's sent to
 ];
 // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site
+// - same-site is deliberately absent: a site ignores the port, so admitting it
+//   would admit every other server on this machine
 // - browsers set Sec-Fetch-* only for a potentially trustworthy URL, so a LAN
 //   address over plain http arrives with none of them
 
@@ -92,9 +94,11 @@ const _ALLOWED_FETCH_SITES = [
 
 /**
  Returns true if the request's Sec-Fetch-Site is one a local server may answer.
- - every cross-site request is refused, whatever it asked for; a <script src>
-    or <img> embed sends no Origin, so the absent CORS header does not stop the
-    page reading what it loaded
+ - only the server's own page and a user-initiated load qualify; same-site is
+    refused along with cross-site, since a site ignores the port and so covers
+    every other server on this machine
+ - an embed is refused too, which the absent CORS header would not have done: a
+    <script src> or <img> sends no Origin, so nothing governs it
  - true when no Sec-Fetch-Site arrives, since there is nothing to check -- a
     non-browser client, or an origin browsers don't set it for
 */
