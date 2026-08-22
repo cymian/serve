@@ -27,7 +27,7 @@ flags to reproduce, and the cross-site refusal isn't on offer at all:
 ```
 
 You can use flags like `--lan` and `--dir-listing` to opt back in to certain
-behaviors.
+behaviors (see `Flags` section below).
 
 ## Use
 
@@ -65,9 +65,12 @@ Deno.serve({ port: 3919, hostname: "127.0.0.1" }, (request) => {
 });
 ```
 
-It checks four things, in order: the `Host` names this server, the request isn't
-cross-site, a mutation carries no foreign `Origin`, and anything under `/api/`
-carries `clientHeader`.
+It checks four things, in order:
+
+1. the `Host` names this server
+2. the request isn't cross-site
+3. a mutation carries no foreign `Origin`
+4. anything under `/api/` carries `clientHeader`
 
 That last one is why the value is never read -- a header outside the small set
 browsers treat as simple can't be sent without a successful preflight, and a
