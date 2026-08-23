@@ -1,8 +1,8 @@
-# serve -- todo
+# @cymian/serve -- todo
 
-The only notes file this project keeps: pending work, rewritten in place. No
-someday, shipped, roadmap, or dev log -- the library is small enough that the
-commit messages carry the reasoning and the git history is the record.
+The only notes file this project keeps: pending work, rewritten in place. The
+library is small enough that the commit messages carry the reasoning and the git
+history is the record.
 
 Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
@@ -40,9 +40,7 @@ the publish, then the checks under it and the two steps it unblocks.
     same check, since both resolve through the same URL
   - `deno publish` aborts on any uncommitted file, `publish.exclude` or not, so
     the tree has to be clean or the run needs `--allow-dirty`
-- **repoint the sibling-path consumers at `jsr:@cymian/serve`.** create-deno's
-  `addWebTasks`, todo_app, mouse-training, and audio all reach it by
-  `../serve/src/mod.ts`.
+- **repoint the sibling-path consumers at `jsr:@cymian/serve`.**
   - the `@todos` block in [](../src/mod.ts) says the same thing; delete it once
     this is done
   - the `@notes` bullet below it about running rather than importing goes at the
