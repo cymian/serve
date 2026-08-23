@@ -20,8 +20,9 @@ The defaults:
     admitting it would admit every other dev server on `127.0.0.1`. Only the
     page this server sent, and a URL you typed or bookmarked, get through
   - the check reads `Sec-Fetch-Site`, sent by Chrome 76+, Firefox 90+, and
-    Safari 16.4+. A client sending none is admitted, since there is nothing to
-    read — every iOS before 16.4, and a browser extension with host permissions
+    Safari 16.4+. A client that doesn't send it is admitted, since there is
+    nothing to read — every iOS before 16.4, and a browser extension with host
+    permissions
 - **no foreign `Host`**: refuses a request addressed to any name but a loopback
   one on the bound port, which is what DNS rebinding relies on — the attacker
   points their own domain at `127.0.0.1`, and every same-origin check then reads
@@ -39,8 +40,8 @@ deno run -R -N jsr:@std/http/file-server \
   -H 'cache-control: no-cache'
 ```
 
-You can use flags like `--lan` and `--dir-listing` to opt back in to certain
-behaviors (see [Flags](#flags) below).
+You can use flags like `--lan` and `--dir-listing` to opt back in (see
+[Flags](#flags) below).
 
 ## Use
 
@@ -64,8 +65,7 @@ await server.shutdown();
 
 It needs `-R` (`--allow-read`) to read the content it serves, and `-N`
 (`--allow-net`) to serve it. Scope both to limit exposure, e.g.
-`-R=src -N=127.0.0.1:3000 -r src/` grants only the served directory and the one
-port.
+`-R=src -N=127.0.0.1:3000` grants only the served directory and the one port.
 
 Scoping `-R` does not contain a symlink, though. Deno checks the permission
 against the path as written, and the dotfile rule matches on the URL, so a link
@@ -103,7 +103,7 @@ It checks four things, in order:
 1. the `Host` names this server
 2. the request isn't on another origin's behalf
 3. a mutation carries no foreign `Origin`
-4. anything under `/api/` carries `clientHeader`
+4. anything under `/api/` carries `clientHeader`, when you set one
 
 The value is never read, and doesn't need to be: a header outside the small set
 browsers treat as simple can't be sent without a successful preflight, and the
@@ -127,6 +127,7 @@ brings `@std/http` along, which only the static server needs.
     network; it does not guard it
 - `--dir-listing` — serve listings for directories that have no `index.html`
 - `-h`, `--help` — print the flags and exit
+- `--version` — print the version and exit
 
 Anything else is an error, so a typo can't quietly serve the wrong thing.
 
@@ -137,4 +138,4 @@ Issues and PRs welcome. `deno task setup` points git at the repo's hooks;
 
 Built with the help of Claude. If you use AI on an issue or PR, please say so
 and say where, and write the description in your own words — enough that I can
-tell that you understand the issue(s) at hand and what the model produced.
+tell that you understand the issues at hand and what the model produced.
