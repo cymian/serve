@@ -37,8 +37,6 @@ follows it because one change closes two items.
   - **mark the other four runtimes "not supported"** rather than leaving them
     unknown. It does not move the score, which counts compatible runtimes, but
     "unknown" reads as untested where the answer is actually known
-- **start `CHANGELOG.md`** -- the one notes-grade file a published package is
-  expected to carry, and what consumers read on an upgrade
 - **publish from GitHub Actions, for provenance.** jsr scores a package that
   publishes from a verifiable CI workflow with a public transparency log entry.
   Needs the repo linked first, and it can't apply retroactively: 0.1.0 stays
@@ -74,7 +72,8 @@ follows it because one change closes two items.
     per-runtime listen adapter, which still needs the `serveDir` replacement
   - the argument against, in one line: `@std/http` is Deno-only and scores 88.
     Deno's own team took this trade for their file server
-- **at the next version bump, remember the dependency-age floor.** Deno 2.9
+- **at the next version bump**: add the [](../CHANGELOG.md) entry and move the
+  `[Unreleased]` compare link, and remember the dependency-age floor -- Deno 2.9
   refuses a dependency published in the last 24 hours, so a same-day publish is
   unreachable without `--min-dep-age 0`. The three sibling consumers carry
   `"minimumDependencyAge": { "exclude": ["jsr:@cymian/*"] }` for it
@@ -84,6 +83,12 @@ follows it because one change closes two items.
 - **file the remaining source `@todos` as issues once the repo is public.** The
   top-level navigation allowance in [](../src/requestGuard.ts), and everything
   under The guard's edges
+- **issue and PR templates in `.github/`.** [](../README.md)'s Contributing
+  section asks a contributor to disclose AI use and write the description
+  themselves, and almost nobody about to file an issue reads a README's last
+  section. A template is shown in the compose box at the moment someone writes,
+  which is where the ask lands. Three lines each; only useful once the repo is
+  public
 
 ## The served root
 
