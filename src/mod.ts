@@ -58,6 +58,14 @@ export interface ServeOptions {
 
 const _DEFAULT_PORT = 8000;
 
+/** The version this module was run at, e.g. `"0.1.0"`, or `"dev"` off jsr. */
+const _VERSION = /\/@cymian\/serve\/([^/]+)\//.exec(import.meta.url)?.[1] ??
+  "dev";
+// - a jsr module's URL carries its version, e.g.
+//   https://jsr.io/@cymian/serve/0.1.0/src/mod.ts, so nothing is read and no
+//   permission is needed; deno.jsonc can't be imported as JSON, and
+//   import.meta.dirname is undefined for every non-file: module
+
 const _NO_CACHE_HEADERS = [
   "cache-control: no-cache",
 ];
@@ -71,6 +79,7 @@ const _USAGE = `Usage: deno run -R -N jsr:@cymian/serve [options]
       --lan            bind 0.0.0.0, print the LAN URL, and admit LAN hosts
       --dir-listing    list a directory that has no index.html
   -h, --help           print this
+      --version        print the version
 `;
 
 //
@@ -192,6 +201,13 @@ if (import.meta.main) {
 
   if (Deno.args.includes("-h") || Deno.args.includes("--help")) {
     console.log(_USAGE);
+    Deno.exit(0);
+  }
+
+  // Answer --version rather than serving
+
+  if (Deno.args.includes("--version")) {
+    console.log(`@cymian/serve ${_VERSION}`);
     Deno.exit(0);
   }
 

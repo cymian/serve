@@ -17,7 +17,8 @@ import type { ServeOptions } from "./mod.ts";
  Returns the options named by a command line.
  - anything unrecognized throws, as does a flag missing its value or a port
     that isn't a whole number in 0-65535
- - `--help` never reaches here; mod.ts's CLI entry answers it first
+ - `--help` and `--version` never reach here; mod.ts's CLI entry answers
+    them first
 */
 function parseArgs(args: string[]): ServeOptions {
   const options: ServeOptions = {};
