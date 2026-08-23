@@ -117,7 +117,7 @@ brings `@std/http` along, which only the static server needs.
 
 ## Flags
 
-- `-p`, `--port` — default 8000
+- `-p`, `--port` — default `8000`
 - `-r`, `--root` — the directory served, default `.`
 - `--lan` — bind to `0.0.0.0`, print the LAN URL, and admit a `Host` naming one
   of this machine's LAN addresses
@@ -132,9 +132,10 @@ brings `@std/http` along, which only the static server needs.
 
 Anything else is an error, so a typo can't quietly serve the wrong thing.
 
-A root that can't be served doesn't fail quietly either: the server starts, and
+A root that can't be served doesn't fail quietly either: the server starts and
 prints which case it is — the path is missing, it names a file, or `-R` doesn't
-reach it — and the status those requests will get.
+reach it — along with the status those requests will get. It keeps running, so a
+root a build hasn't made yet serves as soon as it appears.
 
 ## Contributing
 
