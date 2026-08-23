@@ -137,11 +137,11 @@ export function serve(
         fsRoot: root,
         quiet: true,
         showDirListing: options.isDirListingShown ?? false,
+        headers: _NO_CACHE_HEADERS,
         showDotfiles: false,
         enableCors: false,
         // - both are serveDir's own defaults, pinned because they are two of
         //   the defaults this package promises
-        headers: _NO_CACHE_HEADERS,
       });
     },
   );
@@ -217,8 +217,9 @@ if (import.meta.main) {
   try {
     serve(parseArgs(Deno.args));
   } catch (error) {
-    // - a flag mistake gets the message, not a stack trace
     console.error(error instanceof Error ? error.message : error);
+    // - a flag mistake gets the message, not a stack trace
+
     Deno.exit(1);
   }
 }
