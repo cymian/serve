@@ -1,7 +1,8 @@
 /**
  @fileoverview
- Covers the bind address, the response headers, and that a refused request gets
- a 403 -- what serve() wires together, rather than what the pieces decide.
+ Covers the bind address, the response headers, the 403 a refused request gets,
+ and what the startup warnings say about an unservable root -- what serve()
+ wires together, rather than what the pieces decide.
 */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
