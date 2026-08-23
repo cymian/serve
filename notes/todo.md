@@ -10,6 +10,8 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
 - **finish the jsr package settings** -- under Post-publish. Four fields, one
   visit, and every one of them a score item
+- **make the repo public** -- under Post-publish. Three items below do not
+  exist until it is
 - **a WebSocket upgrade passes the guard** -- under The guard's edges. The one
   edge a real consumer meets, an HMR server being the likeliest
 - **admit `Sec-Fetch-Dest: document`** -- under The guard's edges, and the
@@ -22,12 +24,30 @@ _direction_: no roadmap. 0.1.0 is published and its surface is frozen, so
 everything left is additive -- edges the guard refuses that arguably shouldn't
 be, one shape it doesn't cover, and a printing nit. The WebSocket case leads
 because it is the only one a consumer meets, and the `Sec-Fetch-Dest` fix
-follows it because one change closes two items.
+follows it because one change closes two items. Making the repo public sits
+with them because it is what unblocks the issue-filing work.
 
 ## Post-publish
 
 0.1.0 went to jsr on 2026-08-22. What the publish left open.
 
+- **make the repo public.**
+  `gh repo edit --visibility public --accept-visibility-change-consequences`.
+  Three items here wait on it: the source `@todos` as issues, the `.github/`
+  templates, and the guard's edges as candidate issues
+  - the sweep before it came back clean (2026-08-23): no personal names or
+    paths, no secrets across the history, one noreply author
+  - the history stays as it is. Eleven vague early messages read as a real
+    project, and rewriting one already tagged and published costs more than it
+    buys
+- **set the GitHub About box.** Description and topics are both blank, and the
+  homepage resolves now that the package is up:
+
+  ```sh
+  gh repo edit --description "..." \
+    --homepage https://jsr.io/@cymian/serve \
+    --add-topic deno,static-server,dev-server
+  ```
 - **link the GitHub repo** in the settings at <https://jsr.io/@cymian/serve>.
   The last of the four settings fields, and what enables OIDC publishing from
   Actions. Description, runtime compat, and Readme Source are all set.
@@ -41,6 +61,9 @@ follows it because one change closes two items.
   publishes from a verifiable CI workflow with a public transparency log entry.
   Needs the repo linked first, and it can't apply retroactively: 0.1.0 stays
   without it and 0.1.1 earns it
+  - trigger it on `v*` tags rather than a push to main. The tag is the release
+    act, so unreleased commits on main stay unreleased without a branch to hold
+    them
 - **is `./guard` portable?** [](../src/requestGuard.ts) holds no runtime
   `Deno.*` reference at all -- it is `Request`, `Response`, `Headers`, and `URL`
   throughout, and `getLanAddresses()` is called only when `isLanAllowed`. So the
@@ -78,9 +101,6 @@ follows it because one change closes two items.
   unreachable without `--min-dep-age 0`. Every sibling consumer carries
   `"minimumDependencyAge": { "exclude": ["jsr:@cymian/*"] }` for it, and so does
   the create-deno template
-- **`pre-commit` runs bare `deno fmt`**, which reaches `notes/*.md` -- ruled off
-  limits for the formatter everywhere else. The fix is
-  `"fmt": { "exclude": ["notes/"] }` in [](../deno.jsonc)
 - **file the remaining source `@todos` as issues once the repo is public.** The
   top-level navigation allowance in [](../src/requestGuard.ts), and everything
   under The guard's edges
