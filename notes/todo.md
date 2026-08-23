@@ -32,6 +32,13 @@ two steps it unblocks.
     what [](../README.md) says
   - **then start `CHANGELOG.md`** -- the one notes-grade file a published
     package is expected to carry, and what consumers read on an upgrade
+  - **then run `deno run jsr:@cymian/serve --version`** -- it should print the
+    published version, not `dev`. `--version` reads the version out of
+    `import.meta.url`, and a jsr URL is the one shape that can't be simulated
+    locally; `jsr:@cymian/serve@0.1.0` and an import-map entry are worth the
+    same check, since both resolve through the same URL
+  - `deno publish` aborts on any uncommitted file, `publish.exclude` or not, so
+    the tree has to be clean or the run needs `--allow-dirty`
 - **repoint the sibling-path consumers at `jsr:@cymian/serve`.** create-deno's
   `addWebTasks`, todo_app, mouse-training, and audio all reach it by
   `../serve/src/mod.ts`.
@@ -87,18 +94,6 @@ once the repo is public.
 
 ## Polish
 
-- **`isFetchSiteAllowed` is public API.** It is exported from the `./guard`
-  entry, so 0.1.0 fixes it in the semver contract. Narrow the subpath to
-  `createRequestGuard` and the two types instead (advised 2026-08-22).
-  - no use for it alone has been found: it returns true for an absent header, so
-    by itself it refuses nothing but a compliant browser that already couldn't
-    read the response. What makes it a control is running after the `Host` check
-  - the asymmetry decides it -- adding an export later is a minor bump, removing
-    one is a major, and nothing consumes it today
-  - what it costs: the six `isFetchSiteAllowed:` specs have to assert through
-    `createRequestGuard`, since the module is the entry point and any `export`
-    in it is public. The alternative is splitting the predicate into its own
-    module so the tests can reach it
 - **[](../src/getLanAddresses.ts) keeps every non-loopback IPv4 interface.** A
   machine running Docker, a VM, or a VPN gets those addresses printed as
   `Network:` URLs and admitted into the guard's `Host` allowlist. Admitting them
