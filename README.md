@@ -40,8 +40,8 @@ deno run -R -N jsr:@std/http/file-server \
   -H 'cache-control: no-cache'
 ```
 
-You can use flags like `--lan` and `--dir-listing` to opt back in (see
-[Flags](#flags) below).
+You can use flags like `--lan` and `--dir-listing` to opt back in to certain
+behaviors (see [Flags](#flags) below).
 
 ## Use
 
@@ -137,6 +137,6 @@ Anything else is an error, so a typo can't quietly serve the wrong thing.
 Issues and PRs welcome. `deno task setup` points git at the repo's hooks;
 `deno task test` runs the suite.
 
-Built with the help of Claude. If you use AI on an issue or PR, please say so
-and say where, and write the description in your own words — enough that I can
-tell that you understand the issues at hand and what the model produced.
+Built with the help of Claude. If you use AI on an issue or PR, please say
+where/how, and write the description in your own words — enough that I can tell
+that you understand the issues at hand and what the model produced.
