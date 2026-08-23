@@ -27,9 +27,6 @@
     "pre-commit": "deno fmt && deno lint src/ && deno check src/ && deno task test",
     "setup": "git config core.hooksPath .hooks"
   },
-  "fmt": {
-    "exclude": ["notes/"]
-  },
   "publish": {
     "exclude": [
       "**/*.test.ts",

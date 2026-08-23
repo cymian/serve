@@ -10,8 +10,8 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
 - **finish the jsr package settings** -- under Post-publish. Four fields, one
   visit, and every one of them a score item
-- **make the repo public** -- under Post-publish. Three items below do not
-  exist until it is
+- **make the repo public** -- under Post-publish. Three items below do not exist
+  until it is
 - **a WebSocket upgrade passes the guard** -- under The guard's edges. The one
   edge a real consumer meets, an HMR server being the likeliest
 - **admit `Sec-Fetch-Dest: document`** -- under The guard's edges, and the
@@ -24,8 +24,8 @@ _direction_: no roadmap. 0.1.0 is published and its surface is frozen, so
 everything left is additive -- edges the guard refuses that arguably shouldn't
 be, one shape it doesn't cover, and a printing nit. The WebSocket case leads
 because it is the only one a consumer meets, and the `Sec-Fetch-Dest` fix
-follows it because one change closes two items. Making the repo public sits
-with them because it is what unblocks the issue-filing work.
+follows it because one change closes two items. Making the repo public sits with
+them because it is what unblocks the issue-filing work.
 
 ## Post-publish
 
