@@ -75,8 +75,9 @@ follows it because one change closes two items.
 - **at the next version bump**: add the [](../CHANGELOG.md) entry and move the
   `[Unreleased]` compare link, and remember the dependency-age floor -- Deno 2.9
   refuses a dependency published in the last 24 hours, so a same-day publish is
-  unreachable without `--min-dep-age 0`. The three sibling consumers carry
-  `"minimumDependencyAge": { "exclude": ["jsr:@cymian/*"] }` for it
+  unreachable without `--min-dep-age 0`. Every sibling consumer carries
+  `"minimumDependencyAge": { "exclude": ["jsr:@cymian/*"] }` for it, and so does
+  the create-deno template
 - **`pre-commit` runs bare `deno fmt`**, which reaches `notes/*.md` -- ruled off
   limits for the formatter everywhere else. The fix is
   `"fmt": { "exclude": ["notes/"] }` in [](../deno.jsonc)
