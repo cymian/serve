@@ -28,15 +28,15 @@ follows it because one change closes two items.
 
 0.1.0 went to jsr on 2026-08-22. What the publish left open.
 
-- **finish the package settings** at <https://jsr.io/@cymian/serve>. Four
-  fields, all of them jsr score items:
-  - **description** -- not a `deno.jsonc` field. jsr reads it from the settings
-    tab and nowhere else; Deno's config schema has no such property
-  - **runtime compat** -- Deno alone, honestly. See the portability item below
-  - **Readme Source -> "Readme"** -- otherwise the Overview tab shows
-    [](../src/mod.ts)'s module doc in place of [](../README.md), which says a
-    fraction of what the README does
-  - **link the GitHub repo** -- also what enables OIDC publishing from Actions
+- **link the GitHub repo** in the settings at <https://jsr.io/@cymian/serve>.
+  The last of the four settings fields, and what enables OIDC publishing from
+  Actions. Description, runtime compat, and Readme Source are all set.
+  - the score sits at 94 with only provenance and `multipleRuntimesCompatible`
+    outstanding; everything else -- readme, examples, entrypoint docs, 100% of
+    symbols documented, no slow types -- is green
+  - **mark the other four runtimes "not supported"** rather than leaving them
+    unknown. It does not move the score, which counts compatible runtimes, but
+    "unknown" reads as untested where the answer is actually known
 - **start `CHANGELOG.md`** -- the one notes-grade file a published package is
   expected to carry, and what consumers read on an upgrade
 - **publish from GitHub Actions, for provenance.** jsr scores a package that
