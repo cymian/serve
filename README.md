@@ -132,6 +132,10 @@ brings `@std/http` along, which only the static server needs.
 
 Anything else is an error, so a typo can't quietly serve the wrong thing.
 
+A root that can't be served doesn't fail quietly either: the server starts, and
+prints which case it is — the path is missing, it names a file, or `-R` doesn't
+reach it — and the status those requests will get.
+
 ## Contributing
 
 Issues and PRs welcome. `deno task setup` points git at the repo's hooks;
