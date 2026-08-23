@@ -8,6 +8,8 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
 ## Queue
 
+- **finish the jsr package settings** -- under Post-publish. Four fields, one
+  visit, and every one of them a score item
 - **a WebSocket upgrade passes the guard** -- under The guard's edges. The one
   edge a real consumer meets, an HMR server being the likeliest
 - **admit `Sec-Fetch-Dest: document`** -- under The guard's edges, and the
@@ -16,11 +18,54 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 - **symlink containment** -- under The served root. Deferred for 0.1.0 and
   documented rather than fixed
 
-_direction_: no roadmap. 0.1.0 froze the surface, so everything left is additive
--- edges the guard refuses that arguably shouldn't be, one shape it doesn't
-cover, and a printing nit. The WebSocket case leads because it is the only one a
-consumer meets, and the `Sec-Fetch-Dest` fix follows it because one change
-closes two items.
+_direction_: no roadmap. 0.1.0 is published and its surface is frozen, so
+everything left is additive -- edges the guard refuses that arguably shouldn't
+be, one shape it doesn't cover, and a printing nit. The WebSocket case leads
+because it is the only one a consumer meets, and the `Sec-Fetch-Dest` fix
+follows it because one change closes two items.
+
+## Post-publish
+
+0.1.0 went to jsr on 2026-08-22. What the publish left open.
+
+- **finish the package settings** at <https://jsr.io/@cymian/serve>. Four
+  fields, all of them jsr score items:
+  - **description** -- not a `deno.jsonc` field. jsr reads it from the settings
+    tab and nowhere else; Deno's config schema has no such property
+  - **runtime compat** -- Deno alone, honestly. See the portability item below
+  - **Readme Source -> "Readme"** -- otherwise the Overview tab shows
+    [](../src/mod.ts)'s module doc in place of [](../README.md), which says a
+    fraction of what the README does
+  - **link the GitHub repo** -- also what enables OIDC publishing from Actions
+- **start `CHANGELOG.md`** -- the one notes-grade file a published package is
+  expected to carry, and what consumers read on an upgrade
+- **publish from GitHub Actions, for provenance.** jsr scores a package that
+  publishes from a verifiable CI workflow with a public transparency log entry.
+  Needs the repo linked first, and it can't apply retroactively: 0.1.0 stays
+  without it and 0.1.1 earns it
+- **is `./guard` portable?** [](../src/requestGuard.ts) holds no runtime
+  `Deno.*` reference at all -- it is `Request`, `Response`, `Headers`, and `URL`
+  throughout, and `getLanAddresses()` is called only when `isLanAllowed`. So the
+  subpath may already run on Node and Bun unchanged; a skeleton project settles
+  it in an afternoon.
+  - the one thing that would break it is `Deno.errors.NotCapable` in
+    [](../src/getLanAddresses.ts)'s catch clause, which a `node:os` fallback
+    covers
+  - it does not settle the two-runtime score item either way: jsr's compat flag
+    is package-level, and `.` is bound to `Deno.serve`, `Deno.statSync`,
+    `Deno.args`, and `@std/http`. Claiming Node while `import "@cymian/serve"`
+    throws there earns a bug report. Splitting the guard into its own package is
+    what would make the claim true
+- **at the next version bump, remember the dependency-age floor.** Deno 2.9
+  refuses a dependency published in the last 24 hours, so a same-day publish is
+  unreachable without `--min-dep-age 0`. The three sibling consumers carry
+  `"minimumDependencyAge": { "exclude": ["jsr:@cymian/*"] }` for it
+- **`pre-commit` runs bare `deno fmt`**, which reaches `notes/*.md` -- ruled off
+  limits for the formatter everywhere else. The fix is
+  `"fmt": { "exclude": ["notes/"] }` in [](../deno.jsonc)
+- **file the remaining source `@todos` as issues once the repo is public.** The
+  top-level navigation allowance in [](../src/requestGuard.ts), and everything
+  under The guard's edges
 
 ## The served root
 
