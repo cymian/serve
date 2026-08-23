@@ -1,19 +1,21 @@
 # Config file folding
 
-This file anchors VS Code's file-nesting rules: the config files beside it nest
-under it in the explorer, and the `$` sorts it to the top. It has no other
-purpose and no other content.
+This file anchors VS Code's file-nesting rules: specified sibling files (as
+seen below) nest under it in the explorer panel, and the `$` sorts it to the
+top.
 
-To enable, add the following to your VS Code settings.json and adjust the list
-to your own config surface:
+To enable the nesting, add the following to your VS Code settings.json,
+adjusting the entry to your own preferred file list:
 
-```jsonc
+```json
 "explorer.fileNesting.enabled": true,
 "explorer.fileNesting.patterns": {
-  "$config": ".editorconfig, .gitattributes, .gitignore, .npmignore, deno.json, deno.jsonc, deno.lock, package.json, package-lock.json, tsconfig.*"
+  "$config": "package.json, .gitattributes, .gitignore, .npmignore, tsconfig.*, deno.json, deno.jsonc, deno.lock"
 },
 ```
 
-Only `$config` needs an entry: VS Code's built-in rules nest `yarn.lock` and the
-other lockfiles under `package.json`, and since `package.json` nests here, they
-follow it.
+Note that if `package.json` is present in the list, `package-lock.json` or its
+equivalents (e.g. `yarn.lock` or `pnpm-lock.yaml`, but *not* `deno.lock`) are
+redundant: VS Code's built-in rules normally nest them under `package.json`,
+and in this case, cause them to follow `package.json` as siblings under
+`$config`.
