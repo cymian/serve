@@ -1,6 +1,6 @@
 /**
  The network-interface lookup the guard and the static server share. Its own
- module so that taking either entrypoint doesn't drag the other in.
+ module so that taking either entry point doesn't drag the other in.
 
  @module
 */
@@ -11,7 +11,7 @@
 /**
  Returns this machine's IPv4 addresses on the local network.
  - empty rather than throwing when the networkInterfaces permission is absent,
-    so a caller that only wants a URL to print doesn't need the permission
+    so e.g. `--lan` without `-S` degrades to a printed hint rather than a crash
  - a link-local `169.254.x.x` is left out: it is what a failed DHCP lease
     leaves behind, and nothing on the network reaches the machine by it
 */
@@ -29,7 +29,7 @@ function getLanAddresses(): string[] {
     throw error;
   }
   // - only the permission failure is answered with an empty list; anything
-  //   else would be misreported as "grant -S=networkInterfaces"
+  //   else swallowed here would misreport a real failure as a missing LAN
 }
 
 //

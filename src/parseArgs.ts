@@ -64,7 +64,7 @@ function parseArgs(args: string[]): ServeOptions {
 //@helpers
 
 /**
- Returns the arg a flag consumes, throwing in the flag's name when it's absent.
+ Returns the arg a flag consumes; throws naming the flag when it's absent.
 */
 function _takeValue(flag: string, next: string | undefined): string {
   if (next === undefined) throw new Error(`${flag} needs a value`);

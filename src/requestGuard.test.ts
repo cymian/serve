@@ -107,7 +107,7 @@ Deno.test("createRequestGuard: admits a client that sends no Sec-Fetch-Site at a
   const request = new Request(`http://127.0.0.1:${_PORT}/index.html`, {
     headers: { host: `127.0.0.1:${_PORT}` },
   });
-  // - not a browser, or an origin browsers don't send it to
+  // - not a browser, or a URL browsers don't send it for
 
   assertEquals(await _refusalReason(request), null);
 });

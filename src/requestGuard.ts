@@ -7,7 +7,7 @@
    this machine. One reachable from anywhere can't tell its own caller from a
    stranger, and none of this substitutes for authentication past loopback
  - **which checks apply**: a static server needs the first two; the rest earn
-   their place once a route mutates something
+   their place once a route mutates or exposes something
  - **what it imports**: nothing but the address lookup, so a consumer taking
    the guard alone doesn't typecheck the static server or resolve its
    dependencies
@@ -81,7 +81,7 @@ const _READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const _ALLOWED_FETCH_SITES = [
   "same-origin", // same scheme, host, and port
   "none", // a user-initiated load: a typed URL, a bookmark
-  null, // header absent: not a browser, or not an origin it's sent to
+  null, // header absent: not a browser, or not a URL browsers send it for
 ];
 // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site
 // - same-site is deliberately absent: a site ignores the port, so admitting it

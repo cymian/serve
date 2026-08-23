@@ -6,7 +6,7 @@
  - no dotfiles
  - no CORS
  - no cross-site requests
- - no requests addressed to a name this machine doesn't answer to
+ - no requests addressed to a name this server doesn't answer to
 
  The serving itself is @std/http's serveDir; this module pins how it's
  configured, and doubles as the command line that runs it.
@@ -160,7 +160,7 @@ function _printUrls(port: number, isLanAllowed: boolean): void {
 
   if (lanAddresses.length === 0) {
     console.log(
-      "  Network: no LAN address found, so LAN requests will be refused — grant -S=networkInterfaces",
+      "  Network: no LAN address found, so LAN requests will be refused — is -S=networkInterfaces granted?",
     );
     return;
   }
