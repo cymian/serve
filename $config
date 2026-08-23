@@ -10,8 +10,10 @@ to your own config surface:
 ```jsonc
 "explorer.fileNesting.enabled": true,
 "explorer.fileNesting.patterns": {
-  // - nesting resolves to the root ancestor, so the lockfiles VS Code nests
-  //    under package.json land here too
   "$config": ".editorconfig, .gitattributes, .gitignore, .npmignore, deno.json, deno.jsonc, deno.lock, package.json, package-lock.json, tsconfig.*"
 },
 ```
+
+Only `$config` needs an entry: VS Code's built-in rules nest `yarn.lock` and the
+other lockfiles under `package.json`, and since `package.json` nests here, they
+follow it.
