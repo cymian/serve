@@ -76,7 +76,7 @@ const _USAGE = `Usage: deno run -R -N jsr:@cymian/serve [options]
       --lan            bind 0.0.0.0, print the LAN URL, and admit LAN hosts
       --dir-listing    list a directory that has no index.html
   -h, --help           print this
-      --version        print the version
+  -v, --version        print the version
 `;
 
 //
@@ -203,7 +203,7 @@ if (import.meta.main) {
 
   // Answer --version rather than serving
 
-  if (Deno.args.includes("--version")) {
+  if (Deno.args.includes("-v") || Deno.args.includes("--version")) {
     console.log(`@cymian/serve ${_VERSION}`);
     Deno.exit(0);
   }

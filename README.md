@@ -128,7 +128,7 @@ brings `@std/http` along, which only the static server needs.
     network; it does not guard it
 - `--dir-listing` — serve listings for directories that have no `index.html`
 - `-h`, `--help` — print the flags and exit
-- `--version` — print the version and exit
+- `-v`, `--version` — print the version and exit
 
 Anything else is an error, so a typo can't quietly serve the wrong thing.
 
