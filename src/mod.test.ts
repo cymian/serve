@@ -120,13 +120,38 @@ async function _startupLines(root: string): Promise<string[]> {
 Deno.test("serve: a root that doesn't exist says so, rather than 404ing in silence", async () => {
   const lines = await _startupLines("srcc/");
 
-  assertStringIncludes(lines.join("\n"), '"srcc/" is not a directory');
+  assertStringIncludes(lines.join("\n"), '"srcc/" does not exist');
 });
 
-Deno.test("serve: a root naming a file says the same, since nothing under it is servable", async () => {
+Deno.test("serve: a root naming a file says which it is, not just that it isn't a directory", async () => {
   const lines = await _startupLines("src/mod.ts");
 
-  assertStringIncludes(lines.join("\n"), '"src/mod.ts" is not a directory');
+  assertStringIncludes(
+    lines.join("\n"),
+    '"src/mod.ts" is a file, not a directory',
+  );
+});
+
+Deno.test("serve: a file root really does 500, which is what its warning promises", async () => {
+  const server = serve({ port: 0, root: "src/mod.ts" });
+
+  const response = await fetch(`http://127.0.0.1:${server.addr.port}/mod.ts`);
+  await response.text();
+
+  assertEquals(response.status, 500);
+  await server.shutdown();
+});
+
+Deno.test("serve: a trailing slash on the root changes nothing", async () => {
+  for (const root of ["src", "src/", "./src", "./src/"]) {
+    const server = serve({ port: 0, root });
+
+    const response = await fetch(`http://127.0.0.1:${server.addr.port}/mod.ts`);
+    await response.text();
+
+    assertEquals(response.status, 200, root);
+    await server.shutdown();
+  }
 });
 
 Deno.test("serve: a root that exists prints the URL and nothing else", async () => {
@@ -144,5 +169,25 @@ Deno.test({
     const lines = await _startupLines(".");
 
     assertStringIncludes(lines.join("\n"), '-R does not cover "."');
+  },
+});
+
+Deno.test({
+  name: "serve: a request outside -R 500s, and one inside it is still served",
+  permissions: { read: ["src"], net: ["127.0.0.1"] },
+  fn: async () => {
+    const server = serve({ port: 0, root: "." });
+    const url = `http://127.0.0.1:${server.addr.port}`;
+
+    const outside = await fetch(`${url}/README.md`);
+    await outside.text();
+    const inside = await fetch(`${url}/src/mod.ts`);
+    await inside.text();
+
+    assertEquals(outside.status, 500);
+    assertEquals(inside.status, 200);
+    // - so the warning says "requests outside -R", not "every request"
+
+    await server.shutdown();
   },
 });

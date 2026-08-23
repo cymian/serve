@@ -171,27 +171,27 @@ function _printUrls(port: number, isLanAllowed: boolean): void {
 }
 
 /**
- Prints the served root when nothing under it can be served, naming which of the
- two reasons it is.
+ Prints why nothing under the served root can be served, naming which of the
+ three cases it is: the path is missing, it names a file, or `-R` doesn't reach
+ it.
+ - the root is quoted, so a stray space in it is visible rather than invisible
 */
 function _printRootWarning(root: string): void {
-  let isDirectory = false;
-  let isOutsideReadPermission = false;
+  let message: string;
 
   try {
-    isDirectory = Deno.statSync(root).isDirectory;
+    if (Deno.statSync(root).isDirectory) return;
+
+    message = `"${root}" is a file, not a directory, so every request will 500`;
   } catch (error) {
-    isOutsideReadPermission = error instanceof Deno.errors.NotCapable;
-    // - anything else reads the same as missing: either way nothing is served
+    message = error instanceof Deno.errors.NotCapable
+      ? `-R does not cover "${root}", so requests outside -R will 500`
+      : `"${root}" does not exist, so every request will 404`;
+    // - anything but the permission reads the same as missing: either way
+    //   nothing is there to serve
   }
 
-  if (isDirectory) return;
-
-  console.log(
-    isOutsideReadPermission
-      ? `  Root:    -R does not cover "${root}", so every request will 404`
-      : `  Root:    "${root}" is not a directory, so every request will 404`,
-  );
+  console.log(`  Root:    ${message}`);
 }
 
 //
