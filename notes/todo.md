@@ -67,11 +67,6 @@ arguably shouldn't be, or a shape it doesn't cover. None blocks 0.1.0 -- a dev
 server on a loopback port meets none of them -- and each is a candidate issue
 once the repo is public.
 
-- **`Sec-Fetch-Site` is what the cross-site check reads, and not everything
-  sends it.** Chrome 76+, Firefox 90+, and Safari 16.4+ do; earlier Safari
-  (every iOS before 16.4) sends nothing, and an absent header is admitted by
-  design. Browser extensions with host permissions are also not subject to CORS.
-  Worth a README sentence naming the floor.
 - **A WebSocket upgrade passes the guard.** The handshake is a GET, so the
   mutation check skips it, and WS is exempt from CORS -- a cross-site page that
   gets past check 2 has a bidirectional channel. `clientHeader` can never cover
@@ -83,10 +78,6 @@ once the repo is public.
   on `:8000` linking to an app on `:3000` lands on a refusal. The `@todos` item
   in [](../src/requestGuard.ts) is the fix for both this and the OAuth callback:
   admit `Sec-Fetch-Dest: document`, which is the tab itself.
-- **A default port drops out of `Host`.** Browsers omit `:80` and `:443`, and
-  [](../src/requestGuard.ts)'s allowlist is `name:port` throughout, so a server
-  on either port would refuse every browser request. The fix is admitting a bare
-  `Host` when the port is the scheme's default.
 - **`--lan` admits addresses, not names.** A phone reaching the machine as
   `ians-mbp.local:3000` is refused; only the printed IP URLs work. Either admit
   `.local` names or say in the README that they won't.
@@ -100,21 +91,17 @@ once the repo is public.
 
 ## Polish
 
-- **A root that doesn't exist serves 404s in silence.** `-r srcc/` starts
-  normally and answers everything with a 404, so a typo reads as a broken app
-  rather than a bad flag. A `Deno.stat` at startup could say so beside the
-  `Local:` line, which is where `--lan` already reports what it couldn't find.
 - **`isFetchSiteAllowed` is public API.** It is exported from the `./guard`
   entry, so 0.1.0 fixes it in the semver contract. Worth confirming that is
   intended rather than incidental -- the alternative is narrowing the subpath to
   `createRequestGuard` and the two types.
 - **[](../src/getLanAddresses.ts) keeps every non-loopback IPv4 interface.** A
   machine running Docker, a VM, or a VPN gets those addresses printed as
-  `Network:` URLs and admitted into the guard's `Host` allowlist, and a failed
-  DHCP lease puts a link-local `169.254.x.x` there too. Admitting them is
-  harmless -- they are still this machine -- but printing them is noise, and the
-  first URL listed may be the one that doesn't work.
-  - the same `catch` also swallows every error, not just the permission one, so
-    the "grant -S=networkInterfaces" hint would misread any other failure
+  `Network:` URLs and admitted into the guard's `Host` allowlist. Admitting them
+  is harmless -- they are still this machine -- but printing them is noise, and
+  the first URL listed may be the one that doesn't work.
+  - nothing in `Deno.networkInterfaces()` tells a Docker bridge from the real
+    LAN address, which is what leaves this one open. The link-local
+    `169.254.x.x` case was separable and is gone
 - **No `--version`.** Low value while `deno run jsr:@cymian/serve@0.1.0` pins it
   at the call site, but it is what a published CLI is expected to answer.
