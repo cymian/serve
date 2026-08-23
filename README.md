@@ -103,7 +103,7 @@ It checks four things, in order:
 
 1. the `Host` names this server
 2. the request isn't on another origin's behalf
-3. a mutation carries no foreign `Origin`
+3. a mutation — anything but GET, HEAD, or OPTIONS — carries no foreign `Origin`
 4. anything under `/api/` carries `clientHeader`, when you set one
 
 The value is never read, and doesn't need to be: a header outside the small set
