@@ -93,20 +93,6 @@ const _ALLOWED_FETCH_SITES = [
 //@fns
 
 /**
- Returns true if the request's Sec-Fetch-Site is one a local server may answer.
- - only the server's own page and a user-initiated load qualify; same-site is
-    refused along with cross-site, since a site ignores the port and so covers
-    every other server on this machine
- - an embed is refused too, which the absent CORS header would not have done: a
-    <script src> or <img> sends no Origin, so nothing governs it
- - true when no Sec-Fetch-Site arrives, since there is nothing to check -- a
-    non-browser client, or an origin browsers don't set it for
-*/
-export function isFetchSiteAllowed(request: Request): boolean {
-  return _ALLOWED_FETCH_SITES.includes(request.headers.get("sec-fetch-site"));
-}
-
-/**
  Builds the guard for a server already listening on
  {@linkcode RequestGuardOptions.port | options.port}.
  - the LAN addresses are read once here, so an address the machine gains later
@@ -170,7 +156,7 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
 
     // Reject what a cross-site page asked for
 
-    if (!isFetchSiteAllowed(request)) return _refuse("cross-site request");
+    if (!_isFetchSiteAllowed(request)) return _refuse("cross-site request");
 
     // Reject a mutation sent from a foreign origin
 
@@ -204,6 +190,20 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
 
 //
 //@helpers
+
+/**
+ Returns true if the request's Sec-Fetch-Site is one a local server may answer.
+ - only the server's own page and a user-initiated load qualify; same-site is
+    refused along with cross-site, since a site ignores the port and so covers
+    every other server on this machine
+ - an embed is refused too, which the absent CORS header would not have done: a
+    <script src> or <img> sends no Origin, so nothing governs it
+ - true when no Sec-Fetch-Site arrives, since there is nothing to check -- a
+    non-browser client, or an origin browsers don't set it for
+*/
+function _isFetchSiteAllowed(request: Request): boolean {
+  return _ALLOWED_FETCH_SITES.includes(request.headers.get("sec-fetch-site"));
+}
 
 /** Returns the 403 a failed check earns, naming the check for devtools to read. */
 function _refuse(reason: string): Response {

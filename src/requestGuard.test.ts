@@ -7,84 +7,10 @@
 import { assertEquals } from "@std/assert";
 
 import getLanAddresses from "./getLanAddresses.ts";
-import { createRequestGuard, isFetchSiteAllowed } from "./requestGuard.ts";
+import { createRequestGuard } from "./requestGuard.ts";
 
 //
 //@tests
-
-//## isFetchSiteAllowed
-
-/** A request as a page on another site would have the browser send it. */
-function _crossSiteRequest(headers: Record<string, string>): Request {
-  return new Request("http://127.0.0.1/index.html", {
-    headers: { "sec-fetch-site": "cross-site", ...headers },
-  });
-}
-
-Deno.test("isFetchSiteAllowed: a client that sends no Sec-Fetch-Site is allowed", () => {
-  assertEquals(
-    isFetchSiteAllowed(new Request("http://127.0.0.1/index.html")),
-    true,
-  );
-});
-
-Deno.test("isFetchSiteAllowed: the page's own subresources are allowed", () => {
-  for (const site of ["same-origin", "none"]) {
-    assertEquals(
-      isFetchSiteAllowed(
-        new Request("http://127.0.0.1/index.html", {
-          headers: { "sec-fetch-site": site },
-        }),
-      ),
-      true,
-      site,
-    );
-  }
-});
-
-Deno.test("isFetchSiteAllowed: a same-site fetch is refused, since a site ignores the port", () => {
-  assertEquals(
-    isFetchSiteAllowed(
-      new Request("http://127.0.0.1/index.html", {
-        headers: { "sec-fetch-site": "same-site" },
-      }),
-    ),
-    false,
-  );
-  // - the other dev server on this machine, which is not the page we served
-});
-
-Deno.test("isFetchSiteAllowed: a cross-site fetch is refused", () => {
-  assertEquals(
-    isFetchSiteAllowed(_crossSiteRequest({ "sec-fetch-mode": "cors" })),
-    false,
-  );
-});
-
-Deno.test("isFetchSiteAllowed: a cross-site <script src> embed is refused, though it sends no Origin", () => {
-  assertEquals(
-    isFetchSiteAllowed(_crossSiteRequest({
-      "sec-fetch-mode": "no-cors",
-      "sec-fetch-dest": "script",
-    })),
-    false,
-  );
-});
-
-Deno.test("isFetchSiteAllowed: a cross-site navigation is refused wherever it lands", () => {
-  for (
-    const destination of ["document", "iframe", "frame", "object", "embed"]
-  ) {
-    assertEquals(
-      isFetchSiteAllowed(_crossSiteRequest({
-        "sec-fetch-mode": "navigate",
-        "sec-fetch-dest": destination,
-      })),
-      false,
-      destination,
-    );
-  }
-});
 
 //
 //## createRequestGuard
@@ -108,6 +34,18 @@ function _ownRequest(
 }
 
 const _guard = createRequestGuard({ port: _PORT });
+
+/** Returns the reason the guard refused, or null when it admitted the request. */
+async function _refusalReason(request: Request): Promise<string | null> {
+  const refusal = _guard(request);
+  if (refusal === null) return null;
+
+  return (await refusal.text()).trim().replace("refused: ", "");
+}
+// - naming the check that fired is what keeps a spec from passing on a
+//   refusal it didn't mean to provoke; a wrong Host refuses too
+
+//### The Host check
 
 Deno.test("createRequestGuard: admits the page the server itself sent", () => {
   assertEquals(_guard(_ownRequest("/index.html")), null);
@@ -163,15 +101,85 @@ Deno.test("createRequestGuard: admits a Host whatever its case or trailing dot",
   }
 });
 
-Deno.test("createRequestGuard: refuses a foreign-origin request that is addressed correctly", () => {
-  for (const site of ["cross-site", "same-site"]) {
+//### The cross-site check
+
+Deno.test("createRequestGuard: admits a client that sends no Sec-Fetch-Site at all", async () => {
+  const request = new Request(`http://127.0.0.1:${_PORT}/index.html`, {
+    headers: { host: `127.0.0.1:${_PORT}` },
+  });
+  // - not a browser, or an origin browsers don't send it to
+
+  assertEquals(await _refusalReason(request), null);
+});
+
+Deno.test("createRequestGuard: admits the page's own subresources", async () => {
+  for (const site of ["same-origin", "none"]) {
     assertEquals(
-      _guard(_ownRequest("/index.html", { "sec-fetch-site": site }))?.status,
-      403,
+      await _refusalReason(
+        _ownRequest("/index.html", { "sec-fetch-site": site }),
+      ),
+      null,
       site,
     );
   }
 });
+
+Deno.test("createRequestGuard: refuses a same-site fetch, since a site ignores the port", async () => {
+  assertEquals(
+    await _refusalReason(
+      _ownRequest("/index.html", { "sec-fetch-site": "same-site" }),
+    ),
+    "cross-site request",
+  );
+  // - the other dev server on this machine, which is not the page we served
+});
+
+Deno.test("createRequestGuard: refuses a cross-site fetch", async () => {
+  assertEquals(
+    await _refusalReason(
+      _ownRequest("/index.html", {
+        "sec-fetch-site": "cross-site",
+        "sec-fetch-mode": "cors",
+      }),
+    ),
+    "cross-site request",
+  );
+});
+
+Deno.test("createRequestGuard: refuses a cross-site <script src> embed, though it sends no Origin", async () => {
+  assertEquals(
+    await _refusalReason(
+      _ownRequest("/index.html", {
+        "sec-fetch-site": "cross-site",
+        "sec-fetch-mode": "no-cors",
+        "sec-fetch-dest": "script",
+      }),
+    ),
+    "cross-site request",
+  );
+  // - the absent CORS header would not have covered this one: no Origin, so
+  //   nothing governs it
+});
+
+Deno.test("createRequestGuard: refuses a cross-site navigation wherever it lands", async () => {
+  for (
+    const destination of ["document", "iframe", "frame", "object", "embed"]
+  ) {
+    assertEquals(
+      await _refusalReason(
+        _ownRequest("/index.html", {
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "navigate",
+          "sec-fetch-dest": destination,
+        }),
+      ),
+      "cross-site request",
+      destination,
+    );
+  }
+});
+
+//### The mutation check
 
 Deno.test("createRequestGuard: refuses a mutation carrying a foreign Origin", () => {
   assertEquals(
