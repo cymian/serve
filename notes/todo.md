@@ -15,10 +15,11 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
   once the publish lands
 
 _direction_: no roadmap; the whole file is the run-up to a first public release,
-and the run-up is finished. The export subpath, the exported API, the README,
-and the LICENSE are all as they should ship, so nothing left on the list has to
-happen in any particular order relative to the publish. Do the publish, then the
-two steps it unblocks.
+and the run-up is finished. The last API question is settled -- `./guard`
+exports `createRequestGuard` and the two types and nothing else -- so 0.1.0
+freezes the surface as intended, and the CLI answers `--version`. Nothing left
+on the list has to happen in any particular order relative to the publish. Do
+the publish, then the checks under it and the two steps it unblocks.
 
 ## Release
 
