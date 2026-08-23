@@ -44,8 +44,8 @@ behaviors (see [Flags](#flags) below).
 As a task:
 
 ```jsonc
-"start": "deno run -R=src -N=127.0.0.1:3000 jsr:@cymian/serve -p 3000 -r src/",
-"start:lan": "deno run -R=src -N=0.0.0.0:3000 -S=networkInterfaces jsr:@cymian/serve -p 3000 -r src/ --lan"
+"dev": "deno run -R=src -N=127.0.0.1:3000 jsr:@cymian/serve -p 3000 -r src/",
+"dev:lan": "deno run -R=src -N=0.0.0.0:3000 -S=networkInterfaces jsr:@cymian/serve -p 3000 -r src/ --lan"
 ```
 
 From code:
