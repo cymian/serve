@@ -16,12 +16,13 @@ const _IPV4_PATTERN = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 Deno.test({
   name:
-    "getLanAddresses: returns dotted-quad IPv4 addresses, never a loopback one",
+    "getLanAddresses: returns dotted-quad IPv4 addresses, never a loopback or link-local one",
   permissions: { sys: ["networkInterfaces"] },
   fn: () => {
     for (const address of getLanAddresses()) {
       assertMatch(address, _IPV4_PATTERN);
       assertEquals(address.startsWith("127."), false, address);
+      assertEquals(address.startsWith("169.254."), false, address);
     }
   },
 });
