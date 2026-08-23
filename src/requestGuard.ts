@@ -132,12 +132,23 @@ export function createRequestGuard(options: RequestGuardOptions): RequestGuard {
     ...(options.isLanAllowed ? getLanAddresses() : []),
   ];
 
+  const isDefaultPort = options.port === 80 || options.port === 443;
+  // - browsers leave :80 and :443 out of Host and Origin, so a server on
+  //   either is addressed by the bare name
+
   const allowedHosts = new Set(
-    hostnames.map((hostname) => `${hostname}:${options.port}`),
+    hostnames.flatMap((hostname) => [
+      `${hostname}:${options.port}`,
+      ...(isDefaultPort ? [hostname] : []),
+    ]),
   );
   const allowedOrigins = new Set(
-    [...allowedHosts].map((host) => `http://${host}`),
+    hostnames.flatMap((hostname) => [
+      `http://${hostname}:${options.port}`,
+      ...(options.port === 80 ? [`http://${hostname}`] : []),
+    ]),
   );
+  // - only :80 gets the bare origin, since the scheme here is http throughout
 
   const isPathGuarded = options.isPathGuarded ??
     ((pathname: string) => pathname.startsWith("/api/"));

@@ -237,6 +237,48 @@ Deno.test("createRequestGuard: requires the header only where isPathGuarded says
   assertEquals(streamGuard(ownRequest("/api/window"))?.status, 403);
 });
 
+//### The scheme's default port
+
+// A browser leaves :80 and :443 out of Host and Origin, so a guard built with
+// either never sees the port it was told about.
+
+const defaultPortGuard = createRequestGuard({ port: 80 });
+
+Deno.test("createRequestGuard: admits a bare Host when the server is on port 80", () => {
+  assertEquals(
+    defaultPortGuard(
+      new Request("http://127.0.0.1/index.html", {
+        headers: { host: "127.0.0.1", "sec-fetch-site": "same-origin" },
+      }),
+    ),
+    null,
+  );
+});
+
+Deno.test("createRequestGuard: admits a mutation whose Origin drops port 80 as well", () => {
+  assertEquals(
+    defaultPortGuard(
+      new Request("http://127.0.0.1/api/ingest", {
+        method: "POST",
+        headers: {
+          host: "127.0.0.1",
+          "sec-fetch-site": "same-origin",
+          origin: "http://127.0.0.1",
+        },
+      }),
+    ),
+    null,
+  );
+});
+
+Deno.test("createRequestGuard: refuses a bare Host on every other port, where a browser sends one", () => {
+  assertEquals(
+    guard(ownRequest("/index.html", { host: "127.0.0.1" }))?.status,
+    403,
+  );
+});
+
+//
 //### The lan
 
 // Both loops are empty on a machine with no LAN address, so each test asserts
