@@ -16,6 +16,9 @@ A static dev server with secure and convenient defaults:
   - same-site is refused too: the browser's sense of "site" ignores the port, so
     admitting it would admit every other dev server on `127.0.0.1`. Only the
     page this server sent, and a URL you typed or bookmarked, get through
+  - the check reads `Sec-Fetch-Site`, sent by Chrome 76+, Firefox 90+, and
+    Safari 16.4+. A client sending none is admitted, since there is nothing to
+    read — every iOS before 16.4, and a browser extension with host permissions
 - **no foreign `Host`**: refuses a request addressed to any name but a loopback
   one on the bound port, which is what DNS rebinding relies on — the attacker
   points their own domain at `127.0.0.1`, and every same-origin check then reads
