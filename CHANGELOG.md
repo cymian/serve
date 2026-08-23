@@ -17,8 +17,8 @@ First release.
   pinned to loopback-only, no directory listings, no dotfiles, no CORS, and
   `cache-control: no-cache`.
 - Cross-site requests are refused outright, read from `Sec-Fetch-Site`.
-  `same-site` origins are refused as well, blocking other dev servers on
-  localhost.
+  `same-site` requests are refused as well, so a page from another local dev
+  server gets nothing either.
 - A `Host` naming anything but a loopback address on the bound port is refused —
   the shape DNS rebinding relies on.
 - `createRequestGuard()`, at `@cymian/serve/guard`: the same checks, for a
