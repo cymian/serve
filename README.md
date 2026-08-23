@@ -1,6 +1,9 @@
 # @cymian/serve
 
-A static dev server with secure and convenient defaults:
+A static dev server with secure and convenient defaults. The request guard
+backing it is separately importable, for a server of your own.
+
+The defaults:
 
 - **loopback-only**: listens on `127.0.0.1` (connections from this machine only)
   instead of `0.0.0.0` (connections from any machine on the local network)
@@ -57,7 +60,27 @@ const server = serve({ port: 3000, root: "src/" });
 await server.shutdown();
 ```
 
-### Guarding your own server
+### Permissions
+
+It needs `-R` (`--allow-read`) to read the content it serves, and `-N`
+(`--allow-net`) to serve it. Scope both to limit exposure, e.g.
+`-R=src -N=127.0.0.1:3000 -r src/` grants only the served directory and the one
+port.
+
+Scoping `-R` does not contain a symlink, though. Deno checks the permission
+against the path as written, and the dotfile rule matches on the URL, so a link
+in the served root reaches what it names — a dotfile, or a file outside the
+granted directory — and serves it under whatever name the link carries. Serve a
+root whose links you know.
+
+`--lan` reads `Deno.networkInterfaces()` for the machine's LAN addresses, so it
+needs `-S` (`--allow-sys`), best scoped to `-S=networkInterfaces`. Those
+addresses are both what the `Network:` line prints and what the guard admits a
+`Host` from, so without the permission the server binds to `0.0.0.0` and then
+refuses everything arriving at a LAN address. In a terminal, Deno prompts for
+it.
+
+## Guarding your own server
 
 `serve` is for static files. When you have a server of your own — routes, a
 build step, an API — take just the guard:
@@ -90,26 +113,6 @@ cross-origin POST — can send neither. Your page adds the header to its own
 
 This entry point pulls in no dependencies. Importing `@cymian/serve` itself
 brings `@std/http` along, which only the static server needs.
-
-### Permissions
-
-It needs `-R` (`--allow-read`) to read the content it serves, and `-N`
-(`--allow-net`) to serve it. Scope both to limit exposure, e.g.
-`-R=src -N=127.0.0.1:3000 -r src/` grants only the served directory and the one
-port.
-
-Scoping `-R` does not contain a symlink, though. Deno checks the permission
-against the path as written, and the dotfile rule matches on the URL, so a link
-in the served root reaches what it names — a dotfile, or a file outside the
-granted directory — and serves it under whatever name the link carries. Serve a
-root whose links you know.
-
-`--lan` reads `Deno.networkInterfaces()` for the machine's LAN addresses, so it
-needs `-S` (`--allow-sys`), best scoped to `-S=networkInterfaces`. Those
-addresses are both what the `Network:` line prints and what the guard admits a
-`Host` from, so without the permission the server binds to `0.0.0.0` and then
-refuses everything arriving at a LAN address. In a terminal, Deno prompts for
-it.
 
 ## Flags
 
