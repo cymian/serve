@@ -23,19 +23,9 @@ import { createRequestGuard } from "./requestGuard.ts";
 import type { RequestGuard } from "./requestGuard.ts";
 
 /*
- @todos
- - publish to jsr, then point the consumers at jsr:@cymian/serve
-   - create-deno's addWebTasks, todo_app, mouse-training, and audio all reach
-     it by the sibling path ../serve/src/mod.ts
-*/
-
-/*
  @notes
  - serveDir's ETag is size + mtime, so a build that preserves mtime revalidates
    to 304 with changed content -- normal editing moves mtime
- - importing this module needs @std/http in the consumer's import map and
-   deno.ns in its lib; until it's on jsr, consumers should run it as a task
-   entrypoint rather than import it
 */
 
 //
