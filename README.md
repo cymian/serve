@@ -82,8 +82,8 @@ it.
 
 ## Guarding your own server
 
-`serve` is for static files. When you have a server of your own — routes, a
-build step, an API — take just the guard:
+`serve` is for static files. When you have a server of your own, take just the
+guard:
 
 ```ts
 import { createRequestGuard } from "jsr:@cymian/serve/guard";

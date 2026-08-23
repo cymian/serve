@@ -31,32 +31,6 @@ them because it is what unblocks the issue-filing work.
 
 0.1.0 went to jsr on 2026-08-22. What the publish left open.
 
-- **make the repo public.**
-  `gh repo edit --visibility public --accept-visibility-change-consequences`.
-  Three items here wait on it: the source `@todos` as issues, the `.github/`
-  templates, and the guard's edges as candidate issues
-  - the sweep before it came back clean (2026-08-23): no personal names or
-    paths, no secrets across the history, one noreply author
-  - the history stays as it is. Eleven vague early messages read as a real
-    project, and rewriting one already tagged and published costs more than it
-    buys
-- **set the GitHub About box.** Description and topics are both blank, and the
-  homepage resolves now that the package is up:
-
-  ```sh
-  gh repo edit --description "..." \
-    --homepage https://jsr.io/@cymian/serve \
-    --add-topic deno,static-server,dev-server
-  ```
-- **link the GitHub repo** in the settings at <https://jsr.io/@cymian/serve>.
-  The last of the four settings fields, and what enables OIDC publishing from
-  Actions. Description, runtime compat, and Readme Source are all set.
-  - the score sits at 94 with only provenance and `multipleRuntimesCompatible`
-    outstanding; everything else -- readme, examples, entrypoint docs, 100% of
-    symbols documented, no slow types -- is green
-  - **mark the other four runtimes "not supported"** rather than leaving them
-    unknown. It does not move the score, which counts compatible runtimes, but
-    "unknown" reads as untested where the answer is actually known
 - **publish from GitHub Actions, for provenance.** jsr scores a package that
   publishes from a verifiable CI workflow with a public transparency log entry.
   Needs the repo linked first, and it can't apply retroactively: 0.1.0 stays
@@ -96,11 +70,7 @@ them because it is what unblocks the issue-filing work.
   - the argument against, in one line: `@std/http` is Deno-only and scores 88.
     Deno's own team took this trade for their file server
 - **at the next version bump**: add the [](../CHANGELOG.md) entry and move the
-  `[Unreleased]` compare link, and remember the dependency-age floor -- Deno 2.9
-  refuses a dependency published in the last 24 hours, so a same-day publish is
-  unreachable without `--min-dep-age 0`. Every sibling consumer carries
-  `"minimumDependencyAge": { "exclude": ["jsr:@cymian/*"] }` for it, and so does
-  the create-deno template
+  `[Unreleased]` compare link
 - **file the remaining source `@todos` as issues once the repo is public.** The
   top-level navigation allowance in [](../src/requestGuard.ts), and everything
   under The guard's edges
