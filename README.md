@@ -65,7 +65,8 @@ await server.shutdown();
 
 It needs `-R` (`--allow-read`) to read the content it serves, and `-N`
 (`--allow-net`) to serve it. Scope both to limit exposure, e.g.
-`-R=src -N=127.0.0.1:3000` grants only the served directory and the one port.
+`-R=src -N=127.0.0.1:3000` grants only the served directory and the one port
+(assuming `-r src/`).
 
 Scoping `-R` does not contain a symlink, though. Deno checks the permission
 against the path as written, and the dotfile rule matches on the URL, so a link
