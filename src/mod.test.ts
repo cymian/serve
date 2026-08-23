@@ -124,6 +124,32 @@ Deno.test("serve: a root that doesn't exist says so, rather than 404ing in silen
   assertStringIncludes(lines.join("\n"), '"srcc/" does not exist');
 });
 
+Deno.test("serve: a root the build hasn't made yet serves as soon as it appears", async () => {
+  const root = ".test-dist";
+  const server = serve({ port: 0, root });
+
+  const before = await fetch(`http://127.0.0.1:${server.addr.port}/`);
+  await before.text();
+
+  assertEquals(before.status, 404);
+
+  Deno.mkdirSync(root);
+  // - outside the try, so the cleanup only ever removes what this test created
+
+  try {
+    Deno.writeTextFileSync(`${root}/index.html`, "<h1>built</h1>");
+
+    const after = await fetch(`http://127.0.0.1:${server.addr.port}/`);
+    const body = await after.text();
+
+    assertEquals(after.status, 200);
+    assertStringIncludes(body, "built");
+  } finally {
+    Deno.removeSync(root, { recursive: true });
+    await server.shutdown();
+  }
+});
+
 Deno.test("serve: a root naming a file says which it is, not just that it isn't a directory", async () => {
   const lines = await _startupLines("src/mod.ts");
 

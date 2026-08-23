@@ -16,7 +16,7 @@
     // Check
     "check": "deno check src/",
     "lint": "deno lint src/",
-    "test": "deno test -R=. -N=127.0.0.1,0.0.0.0 -S=networkInterfaces src/",
+    "test": "deno test -R=. -W=.test-dist -N=127.0.0.1,0.0.0.0 -S=networkInterfaces src/",
     // - the whole repo, not just src/: the dotfile and dir-listing specs serve
     //   the repo root, which is the only fixture carrying both
     //
