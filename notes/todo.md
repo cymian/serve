@@ -66,15 +66,14 @@ follows it because one change closes two items.
     Deno's own team took this trade for their file server
 - **at the next version bump**: add the [](../CHANGELOG.md) entry and move the
   `[Unreleased]` compare link
-- **file the remaining source `@todos` as issues once the repo is public.** The
-  top-level navigation allowance in [](../src/requestGuard.ts), and everything
-  under The guard's edges
+- **file the remaining source `@todos` as issues.** The top-level navigation
+  allowance in [](../src/requestGuard.ts), and everything under The guard's
+  edges
 - **issue and PR templates in `.github/`.** [](../README.md)'s Contributing
   section asks a contributor to disclose AI use and write the description
   themselves, and almost nobody about to file an issue reads a README's last
   section. A template is shown in the compose box at the moment someone writes,
-  which is where the ask lands. Three lines each; only useful once the repo is
-  public
+  which is where the ask lands. Three lines each
 
 ## The served root
 
@@ -97,8 +96,7 @@ follows it because one change closes two items.
 
 Turned up by the pre-release audit. Each is a request the guard refuses that
 arguably shouldn't be, or a shape it doesn't cover. None blocks 0.1.0 -- a dev
-server on a loopback port meets none of them -- and each is a candidate issue
-once the repo is public.
+server on a loopback port meets none of them -- and each is a candidate issue.
 
 - **A WebSocket upgrade passes the guard.** The handshake is a GET, so the
   mutation check skips it, and WS is exempt from CORS -- a cross-site page that
