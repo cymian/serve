@@ -126,3 +126,12 @@ it.
 - `-h`, `--help` — print the flags and exit
 
 Anything else is an error, so a typo can't quietly serve the wrong thing.
+
+## Contributing
+
+Issues and PRs welcome. `deno task setup` points git at the repo's hooks;
+`deno task test` runs the suite.
+
+Built with the help of Claude. If you use AI on an issue or PR, please say so
+and say where, and write the description in your own words — enough that I can
+tell that you understand the issue(s) at hand and what the model produced.
