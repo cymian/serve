@@ -56,6 +56,24 @@ follows it because one change closes two items.
     `Deno.args`, and `@std/http`. Claiming Node while `import "@cymian/serve"`
     throws there earns a bug report. Splitting the guard into its own package is
     what would make the claim true
+- **a `node:` rewrite of the static server is the other route, and it is the
+  wrong one.** Writing `.` against `node:http`, `node:fs`, and `node:os` would
+  run on Deno, Node, and Bun -- but not Workers, which has no listening sockets.
+  Two findings from checking it (2026-08-22):
+  - **Deno's permissions gate `node:` APIs identically**, so the `-R`/`-N`/`-S`
+    story survives the rewrite. `node:http` listen raises `NotCapable` without
+    `-N`, `node:fs` read without `-R`, `node:os` `networkInterfaces()` without
+    `-S`. This was the objection that turned out not to hold
+  - **`@std/http` declares `node: false`**, so `serveDir` cannot come along. The
+    rewrite means owning MIME types, ETag and 304, ranges, `index.html`
+    resolution, dotfile filtering, and traversal safety.
+  - it would also break the guard's interface: `node:http` hands over
+    `IncomingMessage`/`ServerResponse`, not `Request`/`Response`, so the one
+    genuinely portable piece would be rewritten to serve the unportable one. The
+    shape that avoids this is a `(Request) => Response` handler with a
+    per-runtime listen adapter, which still needs the `serveDir` replacement
+  - the argument against, in one line: `@std/http` is Deno-only and scores 88.
+    Deno's own team took this trade for their file server
 - **at the next version bump, remember the dependency-age floor.** Deno 2.9
   refuses a dependency published in the last 24 hours, so a same-day publish is
   unreachable without `--min-dep-age 0`. The three sibling consumers carry
@@ -103,7 +121,7 @@ once the repo is public.
   in [](../src/requestGuard.ts) is the fix for both this and the OAuth callback:
   admit `Sec-Fetch-Dest: document`, which is the tab itself.
 - **`--lan` admits addresses, not names.** A phone reaching the machine as
-  `ians-mbp.local:3000` is refused; only the printed IP URLs work. Either admit
+  `laptop.local:3000` is refused; only the printed IP URLs work. Either admit
   `.local` names or say in the README that they won't.
 - **The guard assumes `http://`.** `allowedOrigins` is built with the scheme
   hardcoded, so a consumer terminating TLS locally has its own mutations
