@@ -171,22 +171,26 @@ function _printUrls(port: number, isLanAllowed: boolean): void {
 }
 
 /**
- Prints the served root when it isn't a directory, since every request under it
- then answers 404.
+ Prints the served root when nothing under it can be served, naming which of the
+ two reasons it is.
 */
 function _printRootWarning(root: string): void {
   let isDirectory = false;
+  let isOutsideReadPermission = false;
 
   try {
     isDirectory = Deno.statSync(root).isDirectory;
-  } catch {
-    // - unreadable reads the same as missing: either way nothing is served
+  } catch (error) {
+    isOutsideReadPermission = error instanceof Deno.errors.NotCapable;
+    // - anything else reads the same as missing: either way nothing is served
   }
 
   if (isDirectory) return;
 
   console.log(
-    `  Root:    "${root}" is not a directory, so every request will 404`,
+    isOutsideReadPermission
+      ? `  Root:    -R does not cover "${root}", so every request will 404`
+      : `  Root:    "${root}" is not a directory, so every request will 404`,
   );
 }
 

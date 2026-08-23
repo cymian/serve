@@ -135,3 +135,14 @@ Deno.test("serve: a root that exists prints the URL and nothing else", async () 
   assertEquals(lines.length, 1);
   assertStringIncludes(lines[0], "Local:");
 });
+
+Deno.test({
+  name:
+    "serve: a root outside -R names the permission, rather than blaming the path",
+  permissions: { read: ["src"], net: ["127.0.0.1"] },
+  fn: async () => {
+    const lines = await _startupLines(".");
+
+    assertStringIncludes(lines.join("\n"), '-R does not cover "."');
+  },
+});
