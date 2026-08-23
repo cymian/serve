@@ -8,46 +8,19 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 
 ## Queue
 
-- **publish 0.1.0 to jsr** -- under Release. The pre-release audit is closed:
-  `same-site` is out of the allowlist, symlink containment is deferred and
-  documented, and what it found besides is either fixed or listed below
-- **repoint the sibling-path consumers** -- under Release, and only possible
-  once the publish lands
+- **a WebSocket upgrade passes the guard** -- under The guard's edges. The one
+  edge a real consumer meets, an HMR server being the likeliest
+- **admit `Sec-Fetch-Dest: document`** -- under The guard's edges, and the
+  `@todos` item in [](../src/requestGuard.ts). Closes the same-site 403 and the
+  OAuth callback together
+- **symlink containment** -- under The served root. Deferred for 0.1.0 and
+  documented rather than fixed
 
-_direction_: no roadmap; the whole file is the run-up to a first public release,
-and the run-up is finished. The last API question is settled -- `./guard`
-exports `createRequestGuard` and the two types and nothing else -- so 0.1.0
-freezes the surface as intended, and the CLI answers `--version`. Nothing left
-on the list has to happen in any particular order relative to the publish. Do
-the publish, then the checks under it and the two steps it unblocks.
-
-## Release
-
-- **publish 0.1.0 to jsr.** `deno task publish:dry` is clean -- seven files, no
-  tests, no repo tooling, no lockfile.
-  - the `@cymian` scope has to exist on jsr.io first, and `deno publish`
-    device-auths through a browser, so this one is Ian's to run
-  - **then set Readme Source to "Readme"** in the package's Settings tab. jsr
-    shows the `.` entrypoint's module doc on the Overview tab _instead of_ the
-    README unless you do, and [](../src/mod.ts)'s module doc is a fraction of
-    what [](../README.md) says
-  - **then start `CHANGELOG.md`** -- the one notes-grade file a published
-    package is expected to carry, and what consumers read on an upgrade
-  - **then run `deno run jsr:@cymian/serve --version`** -- it should print the
-    published version, not `dev`. `--version` reads the version out of
-    `import.meta.url`, and a jsr URL is the one shape that can't be simulated
-    locally; `jsr:@cymian/serve@0.1.0` and an import-map entry are worth the
-    same check, since both resolve through the same URL
-  - `deno publish` aborts on any uncommitted file, `publish.exclude` or not, so
-    the tree has to be clean or the run needs `--allow-dirty`
-- **repoint the sibling-path consumers at `jsr:@cymian/serve`.**
-  - the `@todos` block in [](../src/mod.ts) says the same thing; delete it once
-    this is done
-  - the `@notes` bullet below it about running rather than importing goes at the
-    same time -- it only holds while the package is unpublished
-- **file the remaining source `@todos` as issues once the repo is public.** The
-  top-level navigation allowance in [](../src/requestGuard.ts) is the one left
-  after the two above, and so is everything under The guard's edges.
+_direction_: no roadmap. 0.1.0 froze the surface, so everything left is additive
+-- edges the guard refuses that arguably shouldn't be, one shape it doesn't
+cover, and a printing nit. The WebSocket case leads because it is the only one a
+consumer meets, and the `Sec-Fetch-Dest` fix follows it because one change
+closes two items.
 
 ## The served root
 
