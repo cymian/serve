@@ -84,17 +84,21 @@ once the repo is public.
 - **The guard assumes `http://`.** `allowedOrigins` is built with the scheme
   hardcoded, so a consumer terminating TLS locally has its own mutations
   refused.
-- **Test helpers don't take the `_` the source gives non-exported entities.**
-  `_PORT` and `_IPV4_PATTERN` carry it; `ownRequest`, `crossSiteRequest`, and
-  the guard consts beside them don't. Either rule works -- one is that a test
-  module exports nothing, so the marker distinguishes nothing -- but pick one.
 
 ## Polish
 
 - **`isFetchSiteAllowed` is public API.** It is exported from the `./guard`
-  entry, so 0.1.0 fixes it in the semver contract. Worth confirming that is
-  intended rather than incidental -- the alternative is narrowing the subpath to
-  `createRequestGuard` and the two types.
+  entry, so 0.1.0 fixes it in the semver contract. Narrow the subpath to
+  `createRequestGuard` and the two types instead (advised 2026-08-22).
+  - no use for it alone has been found: it returns true for an absent header, so
+    by itself it refuses nothing but a compliant browser that already couldn't
+    read the response. What makes it a control is running after the `Host` check
+  - the asymmetry decides it -- adding an export later is a minor bump, removing
+    one is a major, and nothing consumes it today
+  - what it costs: the six `isFetchSiteAllowed:` specs have to assert through
+    `createRequestGuard`, since the module is the entry point and any `export`
+    in it is public. The alternative is splitting the predicate into its own
+    module so the tests can reach it
 - **[](../src/getLanAddresses.ts) keeps every non-loopback IPv4 interface.** A
   machine running Docker, a VM, or a VPN gets those addresses printed as
   `Network:` URLs and admitted into the guard's `Host` allowlist. Admitting them
@@ -103,5 +107,3 @@ once the repo is public.
   - nothing in `Deno.networkInterfaces()` tells a Docker bridge from the real
     LAN address, which is what leaves this one open. The link-local
     `169.254.x.x` case was separable and is gone
-- **No `--version`.** Low value while `deno run jsr:@cymian/serve@0.1.0` pins it
-  at the call site, but it is what a published CLI is expected to answer.
