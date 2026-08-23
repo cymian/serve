@@ -107,6 +107,7 @@ export function serve(
     // - here rather than above, because port 0 doesn't settle until it binds
 
     _printUrls(addr.port, isLanAllowed);
+    _printRootWarning(root);
   };
 
   // Serve the root to what the guard admits
@@ -161,6 +162,26 @@ function _printUrls(port: number, isLanAllowed: boolean): void {
   for (const address of lanAddresses) {
     console.log(`  Network: http://${address}:${port}/`);
   }
+}
+
+/**
+ Prints the served root when it isn't a directory, since every request under it
+ then answers 404.
+*/
+function _printRootWarning(root: string): void {
+  let isDirectory = false;
+
+  try {
+    isDirectory = Deno.statSync(root).isDirectory;
+  } catch {
+    // - unreadable reads the same as missing: either way nothing is served
+  }
+
+  if (isDirectory) return;
+
+  console.log(
+    `  Root:    "${root}" is not a directory, so every request will 404`,
+  );
 }
 
 //

@@ -98,3 +98,40 @@ Deno.test("serve: isDirListingShown opts that listing back in", async () => {
   assertStringIncludes(body, "mod.ts");
   await server.shutdown();
 });
+
+//## The served root
+
+/** Returns the lines serve() printed as it started on the given root. */
+async function startupLines(root: string): Promise<string[]> {
+  const lines: string[] = [];
+  const log = console.log;
+  console.log = (line: string) => void lines.push(line);
+
+  try {
+    const server = serve({ port: 0, root });
+    await server.shutdown();
+  } finally {
+    console.log = log;
+  }
+
+  return lines;
+}
+
+Deno.test("serve: a root that doesn't exist says so, rather than 404ing in silence", async () => {
+  const lines = await startupLines("srcc/");
+
+  assertStringIncludes(lines.join("\n"), '"srcc/" is not a directory');
+});
+
+Deno.test("serve: a root naming a file says the same, since nothing under it is servable", async () => {
+  const lines = await startupLines("src/mod.ts");
+
+  assertStringIncludes(lines.join("\n"), '"src/mod.ts" is not a directory');
+});
+
+Deno.test("serve: a root that exists prints the URL and nothing else", async () => {
+  const lines = await startupLines("src/");
+
+  assertEquals(lines.length, 1);
+  assertStringIncludes(lines[0], "Local:");
+});
