@@ -70,8 +70,8 @@ once the repo is public.
 - **`Sec-Fetch-Site` is what the cross-site check reads, and not everything
   sends it.** Chrome 76+, Firefox 90+, and Safari 16.4+ do; earlier Safari
   (every iOS before 16.4) sends nothing, and an absent header is admitted by
-  design. Browser extensions with host permissions are also not subject to
-  CORS. Worth a README sentence naming the floor.
+  design. Browser extensions with host permissions are also not subject to CORS.
+  Worth a README sentence naming the floor.
 - **A WebSocket upgrade passes the guard.** The handshake is a GET, so the
   mutation check skips it, and WS is exempt from CORS -- a cross-site page that
   gets past check 2 has a bidirectional channel. `clientHeader` can never cover
@@ -85,8 +85,8 @@ once the repo is public.
   admit `Sec-Fetch-Dest: document`, which is the tab itself.
 - **A default port drops out of `Host`.** Browsers omit `:80` and `:443`, and
   [](../src/requestGuard.ts)'s allowlist is `name:port` throughout, so a server
-  on either port would refuse every browser request. The fix is admitting a
-  bare `Host` when the port is the scheme's default.
+  on either port would refuse every browser request. The fix is admitting a bare
+  `Host` when the port is the scheme's default.
 - **`--lan` admits addresses, not names.** A phone reaching the machine as
   `ians-mbp.local:3000` is refused; only the printed IP URLs work. Either admit
   `.local` names or say in the README that they won't.
