@@ -10,7 +10,7 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import { serve } from "./mod.ts";
 
 //
-//@tests
+//@spec
 
 //## serve
 

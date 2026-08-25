@@ -10,7 +10,7 @@ import getLanAddresses from "./getLanAddresses.ts";
 import { createRequestGuard } from "./requestGuard.ts";
 
 //
-//@tests
+//@spec
 
 //
 //## createRequestGuard

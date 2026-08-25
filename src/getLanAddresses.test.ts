@@ -9,7 +9,7 @@ import { assertEquals, assertMatch } from "@std/assert";
 import getLanAddresses from "./getLanAddresses.ts";
 
 //
-//@tests
+//@spec
 
 /** IPv4 in dotted-quad form, which is the only shape getLanAddresses keeps. */
 const _IPV4_PATTERN = /^\d{1,3}(\.\d{1,3}){3}$/;
