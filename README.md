@@ -1,9 +1,9 @@
 # @cymian/serve
 
 A static dev server with secure and convenient defaults. The request guard
-backing it is separately importable, for a server of your own.
+backing it is separately importable, for custom servers.
 
-The defaults:
+## The defaults
 
 - **loopback-only**: listens on `127.0.0.1` (connections from this machine only)
   instead of `0.0.0.0` (connections from any machine on the local network)
@@ -40,10 +40,12 @@ deno run -R -N jsr:@std/http/file-server \
   -H 'cache-control: no-cache'
 ```
 
+### Overriding the defaults
+
 You can use flags like `--lan` and `--dir-listing` to opt back in to certain
 behaviors (see [Flags](#flags) below).
 
-## Use
+## Usage
 
 As a task:
 
@@ -144,6 +146,6 @@ starts serving as soon as it appears.
 Issues and PRs welcome. `deno task setup` points git at the repo's hooks;
 `deno task test` runs the suite.
 
-Built with the help of Claude. If you use AI on an issue or PR, please say
-where/how, and write the description in your own words — enough that I can tell
-that you understand the issues at hand and what the model produced.
+Built with AI assistance. If you use AI on an issue or PR, please say where/how,
+and write the description in your own words — enough that I can tell that you
+understand the issues at hand.
