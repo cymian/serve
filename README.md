@@ -3,6 +3,16 @@
 A static dev server with secure and convenient defaults. The request guard
 backing it is separately importable, for custom servers.
 
+## Quick start
+
+From the directory you want to serve:
+
+```sh
+deno run -R=. -N=127.0.0.1:8000 jsr:@cymian/serve
+```
+
+Then open <http://127.0.0.1:8000>.
+
 ## The defaults
 
 - **loopback-only**: listens on `127.0.0.1` (connections from this machine only)
