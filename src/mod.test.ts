@@ -1,7 +1,7 @@
 /**
  @fileoverview
  Covers the bind address, the response headers, the 403 a refused request gets,
- and what the startup warnings say about an unservable root -- what `serve()`
+ and what the startup warnings say about an unserveable root -- what `serve()`
  wires together, rather than what the pieces decide.
 */
 
