@@ -50,7 +50,7 @@ export interface ServeOptions {
 const _DEFAULT_PORT = 8000;
 
 /**
- The version this module was run at, e.g. `"0.1.0"`.
+ The version this module was run at, e.g. `"1.2.3"`.
  - `"dev"` wherever the URL carries no version: a checkout, a vendored copy, or
     an install under `node_modules`
 */
@@ -58,7 +58,7 @@ const _VERSION =
   /\/@cymian\/serve\/(\d+\.\d+\.\d+[^/]*)\//.exec(import.meta.url)?.[1] ??
     "dev";
 // - a JSR module's URL carries its version, e.g.
-//   https://jsr.io/@cymian/serve/0.1.0/src/mod.ts, so nothing is read and no
+//   https://jsr.io/@cymian/serve/1.2.3/src/mod.ts, so nothing is read and no
 //   permission is needed; `deno.jsonc` can't be imported as JSON, and
 //   `import.meta.dirname` is undefined for every non-file: module
 // - the segment has to be semver-shaped, or

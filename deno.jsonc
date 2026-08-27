@@ -30,6 +30,7 @@
   "publish": {
     "exclude": [
       "**/*.test.ts",
+      ".github/",
       ".hooks/",
       "notes/",
       ".gitattributes",

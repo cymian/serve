@@ -13,26 +13,19 @@ Excluded from the published package by `publish.exclude` in [](../deno.jsonc).
 - **admit `Sec-Fetch-Dest: document`** -- under The guard's edges, and the
   `@todos` item in [](../src/requestGuard.ts). Closes the same-site 403 and the
   OAuth callback together
-- **symlink containment** -- under The served root. Deferred for 0.1.0 and
-  documented rather than fixed
+- **symlink containment** -- under The served root. Deferred while its
+  cross-platform semantics are unsettled; the current behavior is documented
 
-_direction_: no roadmap. 0.1.0 is published and its surface is frozen, so
-everything left is additive -- edges the guard refuses that arguably shouldn't
-be, one shape it doesn't cover, and a printing nit. The WebSocket case leads
-because it is the only one a consumer meets, and the `Sec-Fetch-Dest` fix
-follows it because one change closes two items.
+_direction_: no roadmap. The published surface is frozen, so everything left is
+additive -- edges the guard refuses that arguably shouldn't be, one shape it
+doesn't cover, and a printing nit. The WebSocket case leads because it is the
+only one a consumer meets, and the `Sec-Fetch-Dest` fix follows it because one
+change closes two items.
 
 ## Post-publish
 
 0.1.0 went to jsr on 2026-08-22. What the publish left open.
 
-- **publish from GitHub Actions, for provenance.** jsr scores a package that
-  publishes from a verifiable CI workflow with a public transparency log entry.
-  Needs the repo linked first, and it can't apply retroactively: 0.1.0 stays
-  without it and 0.1.1 earns it
-  - trigger it on `v*` tags rather than a push to main. The tag is the release
-    act, so unreleased commits on main stay unreleased without a branch to hold
-    them
 - **is `./guard` portable?** [](../src/requestGuard.ts) holds no runtime
   `Deno.*` reference at all -- it is `Request`, `Response`, `Headers`, and `URL`
   throughout, and `getLanAddresses()` is called only when `isLanAllowed`. So the
@@ -64,8 +57,6 @@ follows it because one change closes two items.
     per-runtime listen adapter, which still needs the `serveDir` replacement
   - the argument against, in one line: `@std/http` is Deno-only and scores 88.
     Deno's own team took this trade for their file server
-- **at the next version bump**: add the [](../CHANGELOG.md) entry and move the
-  `[Unreleased]` compare link
 - **file the remaining source `@todos` as issues.** The top-level navigation
   allowance in [](../src/requestGuard.ts), and everything under The guard's
   edges
@@ -77,9 +68,9 @@ follows it because one change closes two items.
 
 ## The served root
 
-- **Symlink containment is deferred for 0.1.0** (ruled 2026-08-22), documented
-  rather than fixed. The dotfile rule matches on the URL and `Deno.stat` follows
-  links, so a link named `plain.txt` serves the `.env` it points at, or any file
+- **Symlink containment remains deferred** (ruled 2026-08-22), documented rather
+  than fixed. The dotfile rule matches on the URL and `Deno.stat` follows links,
+  so a link named `plain.txt` serves the `.env` it points at, or any file
   outside the root. Verified: four such reads returned 200 under `-R` scoped to
   the served root, because Deno checks the permission against the path as
   written, not the resolved one.
@@ -95,8 +86,8 @@ follows it because one change closes two items.
 ## The guard's edges
 
 Turned up by the pre-release audit. Each is a request the guard refuses that
-arguably shouldn't be, or a shape it doesn't cover. None blocks 0.1.0 -- a dev
-server on a loopback port meets none of them -- and each is a candidate issue.
+arguably shouldn't be, or a shape it doesn't cover. A dev server on a loopback
+port meets none of them, and each is a candidate issue.
 
 - **A WebSocket upgrade passes the guard.** The handshake is a GET, so the
   mutation check skips it, and WS is exempt from CORS -- a cross-site page that
