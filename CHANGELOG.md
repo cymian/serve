@@ -7,6 +7,8 @@ Uses the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-08-27
+
 ### Added
 
 - `-v` as a short form of `--version`.
@@ -36,5 +38,6 @@ First release.
 - Flags: `-p`/`--port`, `-r`/`--root`, `--lan`, `--dir-listing`, `-h`/`--help`,
   and `--version`. Anything else is an error.
 
-[Unreleased]: https://github.com/cymian/serve/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/cymian/serve/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/cymian/serve/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/cymian/serve/releases/tag/v0.1.0
