@@ -135,8 +135,9 @@ Anything else is an error, so a typo can't quietly serve the wrong thing.
 
 A root that can't be served doesn't fail quietly either: the server starts and
 prints which case it is — the path is missing, it names a file, or `-R` doesn't
-reach it — along with the status those requests will get. It keeps running, so a
-root a build hasn't made yet serves as soon as it appears.
+reach it. The missing and permission cases name the response status; the file
+case's status varies by platform. It keeps running, so a root a build hasn't
+made yet serves as soon as it appears.
 
 ## Contributing
 

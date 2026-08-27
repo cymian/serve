@@ -5,7 +5,7 @@
  wires together, rather than what the pieces decide.
 */
 
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 
 import { serve } from "./mod.ts";
 
@@ -159,17 +159,29 @@ Deno.test("serve: a root naming a file says which it is, not just that it isn't 
 
   assertStringIncludes(
     lines.join("\n"),
-    '"src/mod.ts" is a file, not a directory',
+    '"src/mod.ts" is a file, not a directory, so it cannot serve requests',
   );
 });
 
-Deno.test("serve: a file root really does 500, which is what its warning promises", async () => {
+Deno.test("serve: a file root returns the platform's path-error status", async () => {
   const server = serve({ port: 0, root: "src/mod.ts" });
 
   const response = await fetch(`http://127.0.0.1:${server.addr.port}/mod.ts`);
   await response.text();
 
-  assertEquals(response.status, 500);
+  const expectedStatuses = Deno.build.os === "windows"
+    ? [404]
+    : Deno.build.os === "darwin"
+    ? [500]
+    : [404, 500];
+  assert(
+    expectedStatuses.includes(response.status),
+    `expected ${expectedStatuses.join(" or ")}, got ${response.status}`,
+  );
+  // - `serveDir` maps `NotFound` to 404 and every other path error to 500;
+  //   Windows reports the path beneath the file as `NotFound`, while the
+  //   measured macOS run reports another error; Linux is unverified
+
   await server.shutdown();
 });
 

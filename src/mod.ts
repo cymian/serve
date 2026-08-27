@@ -183,7 +183,8 @@ function _printRootWarning(root: string): void {
   try {
     if (Deno.statSync(root).isDirectory) return;
 
-    message = `"${root}" is a file, not a directory, so every request will 500`;
+    message =
+      `"${root}" is a file, not a directory, so it cannot serve requests`;
   } catch (error) {
     message = error instanceof Deno.errors.NotCapable
       ? `-R does not cover "${root}", so requests outside -R will 500`

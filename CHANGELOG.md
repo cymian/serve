@@ -14,8 +14,9 @@ Uses the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and
 ### Changed
 
 - The startup warning for an unservable root names which case it is — the path
-  is missing, it names a file, or `-R` doesn't reach it — and each says the
-  status the requests will actually get.
+  is missing, it names a file, or `-R` doesn't reach it. The missing and
+  permission cases also name the response status; the file case's status varies
+  by platform.
 
 ## [0.1.0] — 2026-08-22
 
