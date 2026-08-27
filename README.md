@@ -133,11 +133,11 @@ brings `@std/http` along, which only the static server needs.
 
 Anything else is an error, so a typo can't quietly serve the wrong thing.
 
-A root that can't be served doesn't fail quietly either: the server starts and
-prints which case it is — the path is missing, it names a file, or `-R` doesn't
-reach it. The missing and permission cases name the response status; the file
-case's status varies by platform. It keeps running, so a root a build hasn't
-made yet serves as soon as it appears.
+A root that can't be served doesn't fail quietly: the server starts and reports
+why — the path is missing, the root names a file, or `-R` doesn't cover the
+path. The warning includes the response status when that status is consistent
+across platforms. The server keeps running, so a root a build hasn't made yet
+starts serving as soon as it appears.
 
 ## Contributing
 

@@ -172,9 +172,8 @@ function _printUrls(port: number, isLanAllowed: boolean): void {
 }
 
 /**
- Prints why a request under the served root will fail, naming which of the
- three cases it is: the path is missing, it names a file, or `-R` doesn't reach
- it. Prints nothing for a root that serves.
+ Prints why the served root will fail: the path is missing, the root names a
+ file, or `-R` doesn't cover the path. Prints nothing for a root that serves.
  - the root is quoted, so a stray space in it is visible rather than invisible
 */
 function _printRootWarning(root: string): void {
