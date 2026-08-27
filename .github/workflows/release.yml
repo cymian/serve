@@ -53,7 +53,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: >-
-          deno eval --allow-read=deno.jsonc --allow-env=RELEASE_TAG
+          deno eval
           'const text = await Deno.readTextFile("deno.jsonc");
           const version = text.match(/^\s*"version"\s*:\s*"([^"]+)"/m)?.[1];
           const tag = Deno.env.get("RELEASE_TAG");
