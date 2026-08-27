@@ -1,15 +1,16 @@
 /**
- A static dev server with the defaults a dev server should have:
+ Exports the `serve()` function and `ServeOptions` interface for a static dev
+ server with secure defaults:
  - loopback-only
  - no-cache
- - no dir listing
+ - no directory listings
  - no dotfiles
  - no CORS
  - no cross-site requests
- - no requests addressed to a name this server doesn't answer to
+ - no requests addressed to a host this server doesn't answer to
 
- The serving itself is @std/http's serveDir; this module pins how it's
- configured, and doubles as the command line that runs it.
+ It delegates file serving to `@std/http`'s `serveDir`, pins its configuration,
+ and also provides the command-line entry point.
 
  @module
 */
@@ -24,8 +25,8 @@ import type { RequestGuard } from "./requestGuard.ts";
 
 /*
  @notes
- - serveDir's ETag is size + mtime, so a build that preserves mtime revalidates
-   to 304 with changed content -- normal editing moves mtime
+ - `serveDir`'s ETag is size + mtime, so a build that preserves mtime
+   revalidates to 304 with changed content -- normal editing moves mtime
 */
 
 //
@@ -35,7 +36,7 @@ import type { RequestGuard } from "./requestGuard.ts";
 export interface ServeOptions {
   /** Port to listen on. */
   port?: number;
-  /** Directory served as the site root, relative to the cwd. */
+  /** Directory served as the site root, relative to the `cwd`. */
   root?: string;
   /** Reachable from the local network rather than this machine only. */
   isLanAllowed?: boolean;
@@ -56,17 +57,17 @@ const _DEFAULT_PORT = 8000;
 const _VERSION =
   /\/@cymian\/serve\/(\d+\.\d+\.\d+[^/]*)\//.exec(import.meta.url)?.[1] ??
     "dev";
-// - a jsr module's URL carries its version, e.g.
+// - a JSR module's URL carries its version, e.g.
 //   https://jsr.io/@cymian/serve/0.1.0/src/mod.ts, so nothing is read and no
-//   permission is needed; deno.jsonc can't be imported as JSON, and
-//   import.meta.dirname is undefined for every non-file: module
-// - the segment has to be semver-shaped, or node_modules/@cymian/serve/src/...
-//   would report "src" as the version
+//   permission is needed; `deno.jsonc` can't be imported as JSON, and
+//   `import.meta.dirname` is undefined for every non-file: module
+// - the segment has to be semver-shaped, or
+//   `node_modules/@cymian/serve/src/...` would report "src" as the version
 
 const _NO_CACHE_HEADERS = [
   "cache-control: no-cache",
 ];
-// - without it browsers heuristically cache off Last-Modified and serve
+// - without it browsers heuristically cache off `Last-Modified` and serve
 //   stale files after a rebuild
 
 const _USAGE = `Usage: deno run -R -N jsr:@cymian/serve [options]
@@ -108,11 +109,11 @@ export function serve(
 
   // Build the guard and announce the URLs
 
-  const onListen = (addr: Deno.NetAddr) => {
-    guard = createRequestGuard({ port: addr.port, isLanAllowed });
+  const onListen = (listenAddress: Deno.NetAddr) => {
+    guard = createRequestGuard({ port: listenAddress.port, isLanAllowed });
     // - here rather than above, because port 0 doesn't settle until it binds
 
-    _printUrls(addr.port, isLanAllowed);
+    _printUrls(listenAddress.port, isLanAllowed);
     _printRootWarning(root);
   };
 
@@ -126,7 +127,7 @@ export function serve(
           status: 503,
         });
       }
-      // - onListen builds it before the first request, so this is unreachable;
+      // - `onListen` builds it before the first request, so this is unreachable;
       //   it is here so that a scheduling change breaks the server rather than
       //   unguarding it
 
@@ -140,7 +141,7 @@ export function serve(
         headers: _NO_CACHE_HEADERS,
         showDotfiles: false,
         enableCors: false,
-        // - both are serveDir's own defaults, pinned because they are two of
+        // - both are `serveDir`'s own defaults, pinned because they are two of
         //   the defaults this package promises
       });
     },
@@ -150,7 +151,7 @@ export function serve(
 //
 //@helpers
 
-/** Prints the URLs the server is reachable at, or why the LAN ones are absent. */
+/** Prints the reachable URLs, or why no LAN URL is available. */
 function _printUrls(port: number, isLanAllowed: boolean): void {
   console.log(`  Local:   http://127.0.0.1:${port}/`);
 
@@ -198,14 +199,14 @@ function _printRootWarning(root: string): void {
 //@main
 
 if (import.meta.main) {
-  // Answer --help rather than serving
+  // Answer `--help` rather than serving
 
   if (Deno.args.includes("-h") || Deno.args.includes("--help")) {
     console.log(_USAGE);
     Deno.exit(0);
   }
 
-  // Answer --version rather than serving
+  // Answer `--version` rather than serving
 
   if (Deno.args.includes("-v") || Deno.args.includes("--version")) {
     console.log(`@cymian/serve ${_VERSION}`);

@@ -7,17 +7,17 @@ The defaults:
 
 - **loopback-only**: listens on `127.0.0.1` (connections from this machine only)
   instead of `0.0.0.0` (connections from any machine on the local network)
-- **no dir listings**: does not serve directory listings when there's no
+- **no directory listings**: does not serve directory listings when there's no
   `index.html`
 - **no dotfiles**: does not serve dotfiles (e.g. `.env`, `.git/`) — by name, so
   a symlink pointing at one still serves it (see [Permissions](#permissions))
-- **no cors**: does not send an `Access-Control-Allow-Origin: *` header, so
+- **no CORS**: does not send an `Access-Control-Allow-Origin: *` header, so
   other sites open in your browser can't read what it serves
 - **no cross-site requests**: refuses them outright, so those sites get nothing
   back — which also covers `<script src>` and `<img>` embeds, since they send no
   `Origin` and so aren't governed by the CORS header
-  - same-site is refused too: the browser's sense of "site" ignores the port, so
-    admitting it would admit every other dev server on `127.0.0.1`. Only the
+  - `same-site` is refused too: the browser's sense of "site" ignores the port,
+    so admitting it would admit every other dev server on `127.0.0.1`. Only the
     page this server sent, and a URL you typed or bookmarked, get through
   - the check reads `Sec-Fetch-Site`, sent by Chrome 76+, Firefox 90+, and
     Safari 16.4+. A client that doesn't send it is admitted, since there is
@@ -103,13 +103,14 @@ It checks four things, in order:
 
 1. the `Host` names this server
 2. the request isn't on another origin's behalf
-3. a mutation — anything but GET, HEAD, or OPTIONS — carries no foreign `Origin`
-4. anything under `/api/` carries `clientHeader`, when you set one
+3. a mutation — anything but `GET`, `HEAD`, or `OPTIONS` — carries no foreign
+   `Origin`
+4. anything under `/api/` carries the header named by `clientHeader`, when you
+   set one
 
-The value is never read, and doesn't need to be: a header outside the small set
-browsers treat as simple can't be sent without a successful preflight, and the
-shapes that reach a local server uninvited — a `no-cors` send, a simple
-cross-origin POST — can send neither. Your page adds the header to its own
+That header's value does not matter. A header outside the small set browsers
+treat as simple requires a successful preflight; neither a `no-cors` send nor a
+simple cross-origin `POST` can include one. Your page adds the header to its own
 `fetch` calls; pass `isPathGuarded` if the paths needing it aren't `/api/`.
 
 This entry point pulls in no dependencies. Importing `@cymian/serve` itself
@@ -122,8 +123,8 @@ brings `@std/http` along, which only the static server needs.
 - `--lan` — bind to `0.0.0.0`, print the LAN URL, and admit a `Host` naming one
   of this machine's LAN addresses
   - browsers send `Sec-Fetch-*` only to a trustworthy URL, and no `Origin` on a
-    read, so a request to a LAN address over plain http arrives with nothing for
-    the cross-site check or the mutation check to read. What is left is the
+    read, so a request to a LAN address over plain `http` arrives with nothing
+    for the cross-site check or the mutation check to read. What is left is the
     `Host` check, which every client on the network passes. `--lan` serves the
     network; it does not guard it
 - `--dir-listing` — serve listings for directories that have no `index.html`

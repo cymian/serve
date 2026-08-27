@@ -86,17 +86,17 @@ Deno.test("createRequestGuard: refuses an absolute-form target naming another ho
     }),
   );
   // - the Host header is this server's, so only the request target gives it
-  //   away; serveDir redirects a directory to the URL's own host
+  //   away; `serveDir` redirects a directory to the URL's own host
 
   assertEquals(refusal?.status, 403);
 });
 
 Deno.test("createRequestGuard: admits a Host whatever its case or trailing dot", () => {
-  for (const host of ["LOCALHOST", "LocalHost", "localhost."]) {
+  for (const hostname of ["LOCALHOST", "LocalHost", "localhost."]) {
     assertEquals(
-      _guard(_ownRequest("/index.html", { host: `${host}:${_PORT}` })),
+      _guard(_ownRequest("/index.html", { host: `${hostname}:${_PORT}` })),
       null,
-      host,
+      hostname,
     );
   }
 });
@@ -113,13 +113,13 @@ Deno.test("createRequestGuard: admits a client that sends no Sec-Fetch-Site at a
 });
 
 Deno.test("createRequestGuard: admits the page's own subresources", async () => {
-  for (const site of ["same-origin", "none"]) {
+  for (const fetchSite of ["same-origin", "none"]) {
     assertEquals(
       await _refusalReason(
-        _ownRequest("/index.html", { "sec-fetch-site": site }),
+        _ownRequest("/index.html", { "sec-fetch-site": fetchSite }),
       ),
       null,
-      site,
+      fetchSite,
     );
   }
 });
@@ -211,11 +211,11 @@ const _headerGuard = createRequestGuard({
   clientHeader: "x-worldview",
 });
 
-Deno.test("createRequestGuard: refuses an api request missing the client header", () => {
+Deno.test("createRequestGuard: refuses an API request missing the client header", () => {
   assertEquals(_headerGuard(_ownRequest("/api/window"))?.status, 403);
 });
 
-Deno.test("createRequestGuard: admits an api request carrying it, whatever its value", () => {
+Deno.test("createRequestGuard: admits an API request carrying it, whatever its value", () => {
   assertEquals(
     _headerGuard(_ownRequest("/api/window", { "x-worldview": "" })),
     null,
@@ -287,12 +287,12 @@ Deno.test("createRequestGuard: refuses a bare Host on every other port, where a 
 });
 
 //
-//### The lan
+//### The LAN
 
 // Both loops are empty on a machine with no LAN address, so each test asserts
 // something unconditional first.
 
-Deno.test("createRequestGuard: admits this machine's LAN addresses when the lan is allowed", () => {
+Deno.test("createRequestGuard: admits this machine's LAN addresses when LAN access is allowed", () => {
   const lanGuard = createRequestGuard({ port: _PORT, isLanAllowed: true });
 
   assertEquals(lanGuard(_ownRequest("/index.html")), null);

@@ -49,8 +49,8 @@ Deno.test("parseArgs: a port that isn't a number throws", () => {
 });
 
 Deno.test("parseArgs: a port outside the 16-bit range throws", () => {
-  for (const value of ["-1", "70000", "3.5", ""]) {
-    assertThrows(() => parseArgs(["-p", value]), Error, "port number");
+  for (const invalidPortArg of ["-1", "70000", "3.5", ""]) {
+    assertThrows(() => parseArgs(["-p", invalidPortArg]), Error, "port number");
   }
 });
 

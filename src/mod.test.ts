@@ -1,7 +1,7 @@
 /**
  @fileoverview
  Covers the bind address, the response headers, the 403 a refused request gets,
- and what the startup warnings say about an unservable root -- what serve()
+ and what the startup warnings say about an unservable root -- what `serve()`
  wires together, rather than what the pieces decide.
 */
 
@@ -14,13 +14,13 @@ import { serve } from "./mod.ts";
 
 //## serve
 
-Deno.test("serve: binds loopback when the lan is not allowed", async () => {
+Deno.test("serve: binds loopback when LAN access is not allowed", async () => {
   const server = serve({ port: 0 });
   assertEquals(server.addr.hostname, "127.0.0.1");
   await server.shutdown();
 });
 
-Deno.test("serve: binds every interface when the lan is allowed", async () => {
+Deno.test("serve: binds every interface when LAN access is allowed", async () => {
   const server = serve({ port: 0, isLanAllowed: true });
   assertEquals(server.addr.hostname, "0.0.0.0");
   await server.shutdown();
@@ -40,15 +40,15 @@ Deno.test("serve: an unchanged file revalidates to 304, so no-cache costs no tra
   const server = serve({ port: 0, root: "src/" });
   const url = `http://127.0.0.1:${server.addr.port}/mod.ts`;
 
-  const first = await fetch(url);
-  await first.text();
+  const initialResponse = await fetch(url);
+  await initialResponse.text();
 
-  const second = await fetch(url, {
-    headers: { "if-none-match": first.headers.get("etag")! },
+  const revalidationResponse = await fetch(url, {
+    headers: { "if-none-match": initialResponse.headers.get("etag")! },
   });
-  await second.body?.cancel();
+  await revalidationResponse.body?.cancel();
 
-  assertEquals(second.status, 304);
+  assertEquals(revalidationResponse.status, 304);
   await server.shutdown();
 });
 
@@ -93,26 +93,26 @@ Deno.test("serve: isDirListingShown opts that listing back in", async () => {
   const server = serve({ port: 0, root: ".", isDirListingShown: true });
 
   const response = await fetch(`http://127.0.0.1:${server.addr.port}/src/`);
-  const body = await response.text();
+  const directoryListing = await response.text();
 
   assertEquals(response.status, 200);
-  assertStringIncludes(body, "mod.ts");
+  assertStringIncludes(directoryListing, "mod.ts");
   await server.shutdown();
 });
 
 //## The served root
 
-/** Returns the lines serve() printed as it started on the given root. */
+/** Returns the lines `serve()` printed as it started on the given root. */
 async function _startupLines(root: string): Promise<string[]> {
   const lines: string[] = [];
-  const log = console.log;
+  const originalConsoleLog = console.log;
   console.log = (line: string) => void lines.push(line);
 
   try {
     const server = serve({ port: 0, root });
     await server.shutdown();
   } finally {
-    console.log = log;
+    console.log = originalConsoleLog;
   }
 
   return lines;
@@ -128,10 +128,12 @@ Deno.test("serve: a root the build hasn't made yet serves as soon as it appears"
   const root = ".test-dist";
   const server = serve({ port: 0, root });
 
-  const before = await fetch(`http://127.0.0.1:${server.addr.port}/`);
-  await before.text();
+  const missingRootResponse = await fetch(
+    `http://127.0.0.1:${server.addr.port}/`,
+  );
+  await missingRootResponse.text();
 
-  assertEquals(before.status, 404);
+  assertEquals(missingRootResponse.status, 404);
 
   Deno.mkdirSync(root);
   // - outside the try, so the cleanup only ever removes what this test created
@@ -139,11 +141,13 @@ Deno.test("serve: a root the build hasn't made yet serves as soon as it appears"
   try {
     Deno.writeTextFileSync(`${root}/index.html`, "<h1>built</h1>");
 
-    const after = await fetch(`http://127.0.0.1:${server.addr.port}/`);
-    const body = await after.text();
+    const createdRootResponse = await fetch(
+      `http://127.0.0.1:${server.addr.port}/`,
+    );
+    const createdRootBody = await createdRootResponse.text();
 
-    assertEquals(after.status, 200);
-    assertStringIncludes(body, "built");
+    assertEquals(createdRootResponse.status, 200);
+    assertStringIncludes(createdRootBody, "built");
   } finally {
     Deno.removeSync(root, { recursive: true });
     await server.shutdown();
@@ -206,13 +210,13 @@ Deno.test({
     const server = serve({ port: 0, root: "." });
     const url = `http://127.0.0.1:${server.addr.port}`;
 
-    const outside = await fetch(`${url}/README.md`);
-    await outside.text();
-    const inside = await fetch(`${url}/src/mod.ts`);
-    await inside.text();
+    const outsidePermissionResponse = await fetch(`${url}/README.md`);
+    await outsidePermissionResponse.text();
+    const insidePermissionResponse = await fetch(`${url}/src/mod.ts`);
+    await insidePermissionResponse.text();
 
-    assertEquals(outside.status, 500);
-    assertEquals(inside.status, 200);
+    assertEquals(outsidePermissionResponse.status, 500);
+    assertEquals(insidePermissionResponse.status, 200);
     // - so the warning says "requests outside -R", not "every request"
 
     await server.shutdown();
